@@ -1,0 +1,20 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - heading "🎯 XHS Picker" [level=1] [ref=e7]
+          - generic [ref=e8]: 全平台AI选品工具
+        - generic [ref=e9]:
+          - button "🔍 选品分析" [ref=e10]
+          - button "🌐 内置浏览器" [ref=e11]
+          - button "📌 跟踪列表" [active] [ref=e12]
+    - main [ref=e13]:
+      - generic [ref=e414]:
+        - generic [ref=e415]: 📌
+        - paragraph [ref=e416]: 跟踪列表（功能开发中）
+        - paragraph [ref=e417]: 将在后续版本中实现：跨平台数据监控、生命周期追踪、趋势对比
+    - contentinfo [ref=e50]:
+      - paragraph [ref=e51]: XHS Picker v0.1.0 · 全平台AI选品工具
+      - paragraph [ref=e52]: Powered by 智谱GLM-5.1
+  - alert [ref=e53]

@@ -1,0 +1,231 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - heading "🎯 XHS Picker" [level=1] [ref=e7]
+          - generic [ref=e8]: 全平台AI选品工具
+        - generic [ref=e9]:
+          - button "🔍 选品分析" [ref=e10]
+          - button "🌐 内置浏览器" [ref=e11]
+          - button "📌 跟踪列表" [ref=e12]
+    - main [ref=e13]:
+      - generic [ref=e14]:
+        - generic [ref=e15]:
+          - heading "📝 输入选品信息" [level=2] [ref=e16]
+          - generic [ref=e17]:
+            - generic [ref=e18]:
+              - generic [ref=e19]: 关键词 *
+              - textbox "输入品类关键词，如：防晒霜" [ref=e20]: 减肥药
+            - generic [ref=e21]:
+              - generic [ref=e22]: 品类 *
+              - combobox [ref=e23]:
+                - option "选择品类"
+                - option "实物商品" [selected]
+                - option "功能性半标品"
+                - option "虚拟产品"
+                - option "知识付费"
+                - option "大牌平替"
+                - option "新奇特"
+                - option "周期性/季节性"
+                - option "男性蓝海"
+                - option "高客单蓝海"
+            - generic [ref=e24]:
+              - generic [ref=e25]: 目标平台 *
+              - generic [ref=e26]:
+                - generic [ref=e27] [cursor=pointer]:
+                  - checkbox "📕 小红书" [checked] [ref=e28]
+                  - generic [ref=e29]: 📕
+                  - generic [ref=e30]: 小红书
+                - generic [ref=e31] [cursor=pointer]:
+                  - checkbox "📱 快手" [ref=e32]
+                  - generic [ref=e33]: 📱
+                  - generic [ref=e34]: 快手
+                - generic [ref=e35] [cursor=pointer]:
+                  - checkbox "🎵 抖音" [checked] [ref=e36]
+                  - generic [ref=e37]: 🎵
+                  - generic [ref=e38]: 抖音
+                - generic [ref=e39] [cursor=pointer]:
+                  - checkbox "📹 视频号" [ref=e40]
+                  - generic [ref=e41]: 📹
+                  - generic [ref=e42]: 视频号
+          - button "🔍 开始分析" [ref=e44]
+        - generic [ref=e214]:
+          - generic [ref=e215]:
+            - generic [ref=e216]:
+              - heading "📊 选品分析报告：减肥药" [level=2] [ref=e217]
+              - paragraph [ref=e218]: 品类：实物商品 · 分析时间：2026/6/7 18:54:33
+            - button "📌 加入跟踪列表" [ref=e219]:
+              - generic [ref=e220]: 📌
+              - text: 加入跟踪列表
+          - generic [ref=e221]:
+            - heading "📈 市场概况" [level=3] [ref=e222]:
+              - generic [ref=e223]: 📈
+              - text: 市场概况
+            - generic [ref=e224]:
+              - generic [ref=e225]:
+                - generic [ref=e226]: 📕
+                - generic [ref=e227]: 小红书
+                - generic [ref=e228]: "8483"
+                - generic [ref=e229]: 内容数
+              - generic [ref=e230]:
+                - generic [ref=e231]: 🎵
+                - generic [ref=e232]: 抖音
+                - generic [ref=e233]: "446"
+                - generic [ref=e234]: 内容数
+          - generic [ref=e235]:
+            - heading "🌊 全平台蓝海对比" [level=3] [ref=e236]:
+              - generic [ref=e237]: 🌊
+              - text: 全平台蓝海对比
+            - generic [ref=e238]:
+              - generic [ref=e239]:
+                - generic [ref=e240]: 🎵
+                - generic [ref=e241]:
+                  - generic [ref=e242]:
+                    - generic [ref=e243]: 抖音
+                    - generic [ref=e244]: 竞争度：低
+                  - generic [ref=e245]:
+                    - generic [ref=e246]:
+                      - text: 蓝海评分：
+                      - generic [ref=e247]: 7/10
+                    - generic [ref=e248]: 供需比：1.18
+                  - paragraph [ref=e249]: 基于蓝海指数和竞品密度综合判断
+              - generic [ref=e250]:
+                - generic [ref=e251]: 📕
+                - generic [ref=e252]:
+                  - generic [ref=e253]:
+                    - generic [ref=e254]: 小红书
+                    - generic [ref=e255]: 竞争度：中
+                  - generic [ref=e256]:
+                    - generic [ref=e257]:
+                      - text: 蓝海评分：
+                      - generic [ref=e258]: 6/10
+                    - generic [ref=e259]: 供需比：2.12
+                  - paragraph [ref=e260]: 基于蓝海指数和竞品密度综合判断
+          - generic [ref=e261]:
+            - heading "🔥 各平台爆款潜力" [level=3] [ref=e262]:
+              - generic [ref=e263]: 🔥
+              - text: 各平台爆款潜力
+            - generic [ref=e264]:
+              - generic [ref=e265]:
+                - generic [ref=e266]:
+                  - generic [ref=e267]:
+                    - generic [ref=e268]: 📕
+                    - generic [ref=e269]: 小红书
+                  - generic [ref=e270]: 9/10
+                - generic [ref=e271]: 低粉爆款案例：15个
+                - generic [ref=e272]:
+                  - generic [ref=e273]: 低粉爆款
+                  - generic [ref=e274]: 真实测评
+                - paragraph [ref=e275]: 建议关注低粉爆款账号的选品策略
+              - generic [ref=e276]:
+                - generic [ref=e277]:
+                  - generic [ref=e278]:
+                    - generic [ref=e279]: 🎵
+                    - generic [ref=e280]: 抖音
+                  - generic [ref=e281]: 5/10
+                - generic [ref=e282]: 低粉爆款案例：0个
+                - generic [ref=e283]:
+                  - generic [ref=e284]: 低粉爆款
+                  - generic [ref=e285]: 真实测评
+                - paragraph [ref=e286]: 建议关注低粉爆款账号的选品策略
+          - generic [ref=e287]:
+            - heading "💡 选品建议" [level=3] [ref=e288]:
+              - generic [ref=e289]: 💡
+              - text: 选品建议
+            - generic [ref=e290]:
+              - generic [ref=e291]:
+                - generic [ref=e292]: 推荐指数
+                - generic [ref=e293]:
+                  - generic [ref=e294]: ★
+                  - generic [ref=e295]: ★
+                  - generic [ref=e296]: ★
+                  - generic [ref=e297]: ★
+                  - generic [ref=e298]: ★
+                  - generic [ref=e299]: (4/5)
+              - generic [ref=e300]:
+                - generic [ref=e301]: 建议方向：以实物商品为核心，建议从性价比角度切入
+                - generic [ref=e302]: 适合人群：25-35岁女性，有一定消费能力
+                - generic [ref=e303]: 预期收益：月销1000-3000单
+                - generic [ref=e304]:
+                  - text: 注意事项：
+                  - list [ref=e305]:
+                    - listitem [ref=e306]:
+                      - generic [ref=e307]: ⚠️
+                      - text: 注意平台规则
+                    - listitem [ref=e308]:
+                      - generic [ref=e309]: ⚠️
+                      - text: 避免夸大宣传
+          - generic [ref=e310]:
+            - heading "🏆 平台推荐优先级" [level=3] [ref=e311]:
+              - generic [ref=e312]: 🏆
+              - text: 平台推荐优先级
+            - generic [ref=e313]:
+              - generic [ref=e314]:
+                - generic [ref=e315]: "1"
+                - generic [ref=e316]:
+                  - generic [ref=e317]:
+                    - generic [ref=e318]: 📕
+                    - generic [ref=e319]: 小红书
+                  - paragraph [ref=e320]: 基于平台特性和品类匹配度
+                  - generic [ref=e321]:
+                    - generic [ref=e322]: 用户活跃
+                    - generic [ref=e323]: 流量大
+              - generic [ref=e324]:
+                - generic [ref=e325]: "2"
+                - generic [ref=e326]:
+                  - generic [ref=e327]:
+                    - generic [ref=e328]: 🎵
+                    - generic [ref=e329]: 抖音
+                  - paragraph [ref=e330]: 基于平台特性和品类匹配度
+                  - generic [ref=e331]:
+                    - generic [ref=e332]: 用户活跃
+                    - generic [ref=e333]: 流量大
+          - generic [ref=e334]:
+            - heading "📋 行动建议" [level=3] [ref=e335]:
+              - generic [ref=e336]: 📋
+              - text: 行动建议
+            - generic [ref=e337]:
+              - generic [ref=e338]:
+                - generic [ref=e339]: "1"
+                - generic [ref=e340]:
+                  - generic [ref=e341]:
+                    - generic [ref=e342]: 搜索对标账号
+                    - generic [ref=e343]: 高优先级
+                  - generic [ref=e344]:
+                    - text: 步骤：
+                    - list [ref=e345]:
+                      - listitem [ref=e346]: 在小红书搜索关键词
+                      - listitem [ref=e347]: 找到低粉爆款账号
+                      - listitem [ref=e348]: 分析其选品策略
+                  - paragraph [ref=e349]: ✅ 预期结果：找到3-5个可学习的对标账号
+              - generic [ref=e350]:
+                - generic [ref=e351]: "2"
+                - generic [ref=e352]:
+                  - generic [ref=e353]:
+                    - generic [ref=e354]: 优化内容方向
+                    - generic [ref=e355]: 中优先级
+                  - generic [ref=e356]:
+                    - text: 步骤：
+                    - list [ref=e357]:
+                      - listitem [ref=e358]: 参考对标账号的内容形式
+                      - listitem [ref=e359]: 制作3个不同风格的笔记
+                      - listitem [ref=e360]: 测试数据反馈
+                  - paragraph [ref=e361]: ✅ 预期结果：找到最适合的内容风格
+              - generic [ref=e362]:
+                - generic [ref=e363]: "3"
+                - generic [ref=e364]:
+                  - generic [ref=e365]:
+                    - generic [ref=e366]: 建立选品漏斗
+                    - generic [ref=e367]: 中优先级
+                  - generic [ref=e368]:
+                    - text: 步骤：
+                    - list [ref=e369]:
+                      - listitem [ref=e370]: 记录每日选品数据
+                      - listitem [ref=e371]: 跟踪7天数据变化
+                      - listitem [ref=e372]: 淘汰表现差的品
+                  - paragraph [ref=e373]: ✅ 预期结果：建立稳定的选品漏斗池
+    - contentinfo [ref=e50]:
+      - paragraph [ref=e51]: XHS Picker v0.1.0 · 全平台AI选品工具
+      - paragraph [ref=e52]: Powered by 智谱GLM-5.1
+  - alert [ref=e53]

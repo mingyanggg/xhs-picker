@@ -1,0 +1,55 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - heading "📌 选品跟踪" [level=1] [ref=e5]
+        - paragraph [ref=e6]: 跟踪已选品的跨平台数据变化
+      - link "← 返回分析" [ref=e7] [cursor=pointer]:
+        - /url: /
+    - generic [ref=e8]:
+      - button "全部" [ref=e9]
+      - button "测品中(1)" [ref=e10]:
+        - text: 测品中
+        - generic [ref=e11]: (1)
+      - button "暂停(0)" [ref=e12]:
+        - text: 暂停
+        - generic [ref=e13]: (0)
+      - button "已归档(0)" [ref=e14]:
+        - text: 已归档
+        - generic [ref=e15]: (0)
+    - generic [ref=e16]:
+      - generic [ref=e17]:
+        - generic [ref=e18]: 上升期
+        - generic [ref=e19]: "1"
+        - generic [ref=e20]: 个品
+      - generic [ref=e21]:
+        - generic [ref=e22]: 爆发期
+        - generic [ref=e23]: "0"
+        - generic [ref=e24]: 个品
+      - generic [ref=e25]:
+        - generic [ref=e26]: 稳定期
+        - generic [ref=e27]: "0"
+        - generic [ref=e28]: 个品
+      - generic [ref=e29]:
+        - generic [ref=e30]: 衰退期
+        - generic [ref=e31]: "0"
+        - generic [ref=e32]: 个品
+    - generic [ref=e35]:
+      - generic [ref=e36]:
+        - generic [ref=e37]:
+          - generic [ref=e38]: 上升期
+          - generic [ref=e39]: 测品中
+          - generic [ref=e40]: 减肥药
+          - generic [ref=e41]: 实物商品
+        - generic [ref=e42]:
+          - generic [ref=e43]: 📕 小红书
+          - generic [ref=e44]: 🎵 抖音
+        - generic [ref=e45]:
+          - generic [ref=e46]: 📕暂无数据
+          - generic [ref=e47]: 🎵暂无数据
+      - generic [ref=e48]:
+        - link "详情 →" [ref=e49] [cursor=pointer]:
+          - /url: /tracker/tracker-1780829701424-624qh5beb
+        - button "归档" [ref=e50]
+        - button "删除" [ref=e51]
+  - alert [ref=e52]

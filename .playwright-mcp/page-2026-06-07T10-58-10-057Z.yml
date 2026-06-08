@@ -1,0 +1,60 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - heading "🎯 XHS Picker" [level=1] [ref=e7]
+          - generic [ref=e8]: 全平台AI选品工具
+        - generic [ref=e9]:
+          - button "🔍 选品分析" [ref=e10]
+          - button "🌐 内置浏览器" [ref=e11]
+          - button "📌 跟踪列表" [ref=e12]
+    - main [ref=e13]:
+      - generic [ref=e14]:
+        - generic [ref=e15]:
+          - heading "📝 输入选品信息" [level=2] [ref=e16]
+          - generic [ref=e17]:
+            - generic [ref=e18]:
+              - generic [ref=e19]: 关键词 *
+              - textbox "输入品类关键词，如：防晒霜" [ref=e20]
+            - generic [ref=e21]:
+              - generic [ref=e22]: 品类 *
+              - combobox [ref=e23]:
+                - option "选择品类" [selected]
+                - option "实物商品"
+                - option "功能性半标品"
+                - option "虚拟产品"
+                - option "知识付费"
+                - option "大牌平替"
+                - option "新奇特"
+                - option "周期性/季节性"
+                - option "男性蓝海"
+                - option "高客单蓝海"
+            - generic [ref=e24]:
+              - generic [ref=e25]: 目标平台 *
+              - generic [ref=e26]:
+                - generic [ref=e27] [cursor=pointer]:
+                  - checkbox "📕 小红书" [checked] [ref=e28]
+                  - generic [ref=e29]: 📕
+                  - generic [ref=e30]: 小红书
+                - generic [ref=e31] [cursor=pointer]:
+                  - checkbox "📱 快手" [ref=e32]
+                  - generic [ref=e33]: 📱
+                  - generic [ref=e34]: 快手
+                - generic [ref=e35] [cursor=pointer]:
+                  - checkbox "🎵 抖音" [ref=e36]
+                  - generic [ref=e37]: 🎵
+                  - generic [ref=e38]: 抖音
+                - generic [ref=e39] [cursor=pointer]:
+                  - checkbox "📹 视频号" [ref=e40]
+                  - generic [ref=e41]: 📹
+                  - generic [ref=e42]: 视频号
+          - button "🔍 开始分析" [ref=e44]
+        - generic [ref=e46]:
+          - generic [ref=e47]: 📊
+          - paragraph [ref=e48]: 输入关键词并选择平台后，这里将显示分析结果
+          - paragraph [ref=e49]: 报告包含：市场概况 / 蓝海对比 / 爆款潜力 / 选品建议 / 平台优先级 / 行动建议
+    - contentinfo [ref=e50]:
+      - paragraph [ref=e51]: XHS Picker v0.1.0 · 全平台AI选品工具
+      - paragraph [ref=e52]: Powered by 智谱GLM-5.1
+  - alert [ref=e53]

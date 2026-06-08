@@ -1,0 +1,46 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - link "← 返回跟踪列表" [ref=e4] [cursor=pointer]:
+        - /url: /tracker
+      - generic [ref=e5]: 更新于 6/7/2026
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - heading "减肥药" [level=1] [ref=e8]
+        - generic [ref=e9]: 实物商品
+        - generic [ref=e10]: 上升期
+      - generic [ref=e11]:
+        - generic [ref=e12]: 📕 小红书
+        - generic [ref=e13]: 🎵 抖音
+      - generic [ref=e14]:
+        - generic [ref=e15]: 状态：
+        - button "测品中" [ref=e16]
+        - button "暂停" [ref=e17]
+        - button "归档" [ref=e18]
+        - generic [ref=e19]: 周期：
+        - button "上升期" [ref=e20]
+        - button "爆发期" [ref=e21]
+        - button "稳定期" [ref=e22]
+        - button "衰退期" [ref=e23]
+    - generic [ref=e24]:
+      - button "📕 小红书" [ref=e25]
+      - button "🎵 抖音" [ref=e26]
+    - generic [ref=e27]:
+      - heading "📕 小红书 数据" [level=2] [ref=e28]
+      - paragraph [ref=e29]: 暂无数据快照
+    - generic [ref=e30]:
+      - heading "全平台数据对比" [level=2] [ref=e31]
+      - generic [ref=e32]:
+        - generic [ref=e33]:
+          - generic [ref=e34]: 📕 小红书
+          - generic [ref=e35]:
+            - generic [ref=e36]: 笔记：0
+            - generic [ref=e37]: 互动：0
+            - generic [ref=e38]: 指数：-
+        - generic [ref=e39]:
+          - generic [ref=e40]: 🎵 抖音
+          - generic [ref=e41]:
+            - generic [ref=e42]: 笔记：0
+            - generic [ref=e43]: 互动：0
+            - generic [ref=e44]: 指数：-
+  - alert [ref=e45]

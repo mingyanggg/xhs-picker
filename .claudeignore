@@ -1,0 +1,12 @@
+# Claude Code 上下文保护：屏蔽大目录，避免上下文超限卡死
+node_modules/
+.next/
+dist/
+build/
+target/
+*.dmg
+*.app/
+.DS_Store
+*.log
+.env.local
+.env
