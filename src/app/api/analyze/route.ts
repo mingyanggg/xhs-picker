@@ -28,7 +28,7 @@ import type {
   Category,
   ScrapedData,
 } from '@/lib/platforms/types';
-import { analyze, generateMockReport } from '@/lib/analyzer';
+import { analyze, generateMockReport, HAS_REAL_API_KEY } from '@/lib/analyzer';
 import { isBlacklisted, getPlatformWarnings } from '@/lib/blacklist';
 import { getPlatform, scrapeAllPlatforms, PLATFORM_NAMES } from '@/lib/platforms/server/platforms';
 
@@ -135,11 +135,11 @@ export async function POST(request: NextRequest) {
       scrapeStatus = result.scrapeStatus;
     }
 
-    // 调用AI分析（如果配置了API Key）
+    // 调用AI分析（如果配置了真实 API Key）
     let report;
-    const hasApiKey = !!process.env.DEEPSEEK_API_KEY || !!process.env.ZHIPU_API_KEY;
+    const apiKeyConfigured = HAS_REAL_API_KEY;
 
-    if (hasApiKey) {
+    if (apiKeyConfigured) {
       try {
         report = await analyze(keyword, category, platforms, scrapedDataList);
       } catch (error) {
@@ -148,8 +148,8 @@ export async function POST(request: NextRequest) {
         report = generateMockReport(keyword, category, platforms);
       }
     } else {
-      // 无API Key，使用模拟报告
-      console.log('未配置 DEEPSEEK_API_KEY，使用模拟报告');
+      // API Key 未配置或为占位符，使用模拟报告
+      console.log('DEEPSEEK_API_KEY 未配置或为占位符，使用模拟报告');
       report = generateMockReport(keyword, category, platforms);
     }
 

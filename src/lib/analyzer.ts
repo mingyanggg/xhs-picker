@@ -29,10 +29,14 @@ import { CATEGORIES, getCategoryInfo } from './categories';
 import { PLATFORM_NAMES } from './platforms';
 
 // ============== 环境变量 ==============
-// ============== 环境变量 ==============
 // 默认值走 DeepSeek（OpenAI 兼容），通过环境变量可覆盖到任意智谱/MiniMax/OpenAI 等
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || process.env.ZHIPU_API_KEY || '';
 const DEEPSEEK_API_URL = process.env.DEEPSEEK_API_URL || 'https://api.deepseek.com/v1/chat/completions';
+
+/** 检查是否配置了真实 API Key */
+const HAS_REAL_API_KEY = DEEPSEEK_API_KEY &&
+  DEEPSEEK_API_KEY.length > 20 &&
+  !DEEPSEEK_API_KEY.includes('your-');
 
 // ============== Prompt构建 ==============
 
@@ -208,8 +212,8 @@ async function callZhipuAPI(
   userPrompt: string,
   model: string = 'deepseek-v4-flash'
 ): Promise<string> {
-  if (!DEEPSEEK_API_KEY) {
-    throw new Error('DEEPSEEK_API_KEY 未配置');
+  if (!HAS_REAL_API_KEY) {
+    throw new Error('DEEPSEEK_API_KEY 未配置或为占位符，请配置真实的 API Key');
   }
 
   const request: ZhipuRequest = {
@@ -438,3 +442,4 @@ export function generateMockReport(
 
 export default analyze;
 export { callZhipuAPI, parseReport, buildSystemPrompt, buildUserPrompt };
+export { HAS_REAL_API_KEY };
