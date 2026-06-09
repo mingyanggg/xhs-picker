@@ -49,9 +49,12 @@ function convertToContentItem(note: PageData['notes'][0]): ContentItem {
     },
     account: {
       id: '',
+      name: note.author,
       nickname: note.author,
       avatar: '',
       followers: 0,
+      contentCount: 0,
+      avgEngagement: 0,
     },
     isLowFollowerViral: false,
   };

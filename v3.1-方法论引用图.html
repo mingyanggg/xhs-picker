@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>方法论引用关系图 · v3.1</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #F5F1E8;
+    color: #2A1F14;
+    padding: 24px 16px;
+  }
+  .container { max-width: 1500px; margin: 0 auto; }
+  h1 { font-size: 26px; color: #2A1F14; margin-bottom: 4px; }
+  .subtitle { color: #6B5D4F; font-size: 12px; margin-bottom: 24px; }
+
+  /* 大区块 */
+  .section {
+    background: #FFFFFF;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2A1F14;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #F5F1E8;
+  }
+
+  /* 来源清单 */
+  .source-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .source-item {
+    background: #FAF7F0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    border-left: 4px solid #D88C5A;
+  }
+  .source-id {
+    font-family: monospace;
+    font-size: 10px;
+    color: #D88C5A;
+    font-weight: 700;
+  }
+  .source-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2A1F14;
+    margin: 2px 0;
+  }
+  .source-desc {
+    font-size: 11px;
+    color: #6B5D4F;
+    line-height: 1.4;
+  }
+
+  /* 引用关系矩阵 */
+  .matrix {
+    overflow-x: auto;
+    margin-top: 12px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  th, td {
+    padding: 8px 10px;
+    text-align: center;
+    border: 1px solid #EDE5D3;
+  }
+  th {
+    background: #2A1F14;
+    color: #F5F1E8;
+    font-weight: 600;
+    font-size: 11px;
+    position: sticky;
+    top: 0;
+  }
+  th.row-header {
+    background: #FAF7F0;
+    color: #2A1F14;
+    text-align: left;
+    font-size: 12px;
+    min-width: 120px;
+  }
+  td.method-cell {
+    background: #F5F1E8;
+    font-family: monospace;
+    font-size: 10px;
+    color: #6B5D4F;
+    font-weight: 700;
+  }
+  td.must-cell {
+    background: #FFFFFF;
+    font-family: monospace;
+    font-size: 11px;
+    color: #2A1F14;
+    font-weight: 700;
+    text-align: left;
+  }
+  td.linked { background: #DCEAD8; color: #2D5016; font-weight: 700; }
+  td.linked-strong { background: #5C8A5C; color: #FFFFFF; font-weight: 700; }
+  td.linked-partial { background: #FFE5C0; color: #8B5A1A; }
+  td.not-linked { background: #FFFFFF; color: #CCCCCC; }
+
+  /* 流向图 */
+  .flow-diagram {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .flow-layer {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+  .flow-box {
+    flex: 1;
+    min-width: 140px;
+    background: #FAF7F0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    border: 1px solid #EDE5D3;
+  }
+  .flow-box.source { border-left: 4px solid #4A6B8A; }
+  .flow-box.must { border-left: 4px solid #D88C5A; background: #FFF5E8; }
+  .flow-box.module { border-left: 4px solid #5C8A5C; }
+  .flow-box.feature { border-left: 4px solid #8A5C7A; background: #F5E8F0; }
+  .flow-layer-title {
+    font-size: 12px;
+    color: #6B5D4F;
+    font-weight: 700;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .flow-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2A1F14;
+  }
+  .flow-detail {
+    font-size: 10px;
+    color: #6B5D4F;
+    margin-top: 4px;
+  }
+
+  /* 箭头 */
+  .arrow-down {
+    text-align: center;
+    color: #D88C5A;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .arrow-right {
+    color: #D88C5A;
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  /* 统计 */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .stat-card {
+    background: #FAF7F0;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 24px;
+    font-weight: 700;
+    color: #D88C5A;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: #6B5D4F;
+    margin-top: 4px;
+  }
+
+  /* 关键引用高亮 */
+  .key-link {
+    background: #FFF5E8;
+    border: 2px solid #D88C5A;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+  }
+  .key-link-title {
+    color: #D88C5A;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .key-link-content {
+    font-size: 12px;
+    color: #2A1F14;
+    line-height: 1.6;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 20px;
+    color: #6B5D4F;
+    font-size: 10px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>📚 方法论引用关系图</h1>
+  <p class="subtitle">v3.1 must_pass ← 11 篇手册 + 飞书文章 + 那哥决策 · 2026-06-09</p>
+
+  <!-- 区块 1：方法论来源 -->
+  <div class="section">
+    <div class="section-title">📖 一、方法论来源（3 大类，21 个方法）</div>
+
+    <div class="source-list">
+      <div class="source-item">
+        <div class="source-id">02-通用底层逻辑</div>
+        <div class="source-name">G1-G8 · 通用方法</div>
+        <div class="source-desc">蓝海三要素 / 六步法 / 痛点vs痒点 / 跟品 / 周期性 / 用户需求 / 趋势</div>
+      </div>
+      <div class="source-item">
+        <div class="source-id">04-小红书选品</div>
+        <div class="source-name">X1-X11 · 小红书专用</div>
+        <div class="source-desc">蓝海 / 低粉爆款 / 选品方向 / 测品 / 中高端 / 6 工具 / 漏斗池</div>
+      </div>
+      <div class="source-item">
+        <div class="source-id">11-其他</div>
+        <div class="source-name">O1-O5 · 跨领域</div>
+        <div class="source-desc">圈层 / 投资模型 / 虚拟品 / 独立站 / B2B（v3.1 暂不做）</div>
+      </div>
+      <div class="source-item">
+        <div class="source-id">飞书文章 2026-06-09</div>
+        <div class="source-name">F1-F4 · 飞书方法</div>
+        <div class="source-desc">品类区分 / 封面二阶段 / 卖点重组 4 步 / 视频剪辑 SOP</div>
+      </div>
+      <div class="source-item">
+        <div class="source-id">那哥决策 2026-06-09</div>
+        <div class="source-name">N1-N3 · 用户决策</div>
+        <div class="source-desc">多模态必要 / 第三方工具 Tauri + CDP / 不做 1:1 搬运警告</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 区块 2：完整引用矩阵 -->
+  <div class="section">
+    <div class="section-title">🔗 二、完整引用矩阵（16 must_pass × 21 方法）</div>
+    <p style="font-size:11px; color:#6B5D4F; margin-bottom:8px;">
+      🟢 强引用 = 必须实现 &nbsp; 🟡 部分 = 涉及但不完整 &nbsp; ⚪ 未引用
+    </p>
+
+    <div class="matrix">
+      <table>
+        <thead>
+          <tr>
+            <th class="row-header">must_pass</th>
+            <th>G1 蓝海</th><th>G2 六步</th><th>G4 痛点</th><th>G5 跟品</th><th>G7 用户</th>
+            <th>X1 蓝海</th><th>X2 低粉</th><th>X3-5 工具</th><th>X7 交叉</th><th>X8 漏斗</th><th>X9 方向</th><th>X10 测品</th><th>X11 中高端</th>
+            <th>F1 品类</th><th>F2 封面</th><th>F3 卖点</th><th>F4 视频</th>
+            <th>N1 多模态</th><th>N2 Tauri</th><th>N3 合规</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="must-cell">M1 选品功能</td>
+            <td class="linked-strong">●</td><td class="linked">●</td><td class="linked">●</td><td class="linked">●</td><td class="linked">●</td>
+            <td class="linked-strong">●</td><td class="linked">●</td><td class="linked">●</td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="linked">●</td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="linked-strong">●</td><td class="not-linked"></td><td class="not-linked"></td>
+          </tr>
+          <tr>
+            <td class="must-cell">M2 货源反查</td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="linked-strong">●</td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="linked-partial">●</td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+          </tr>
+          <tr>
+            <td class="must-cell">M3 AI 算法</td>
+            <td class="linked-strong">●</td><td class="linked-strong">●</td><td class="linked-strong">●</td><td class="linked">●</td><td class="linked">●</td>
+            <td class="linked-strong">●</td><td class="linked">●</td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="linked-partial">●</td><td class="not-linked"></td><td class="linked-strong">●</td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+          </tr>
+          <tr>
+            <td class="must-cell">M4 极致安全</td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="linked-strong">●</td><td class="not-linked"></td>
+          </tr>
+          <tr>
+            <td class="must_cell">M5 数据准确</td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="linked-strong">●</td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+          </tr>
+          <tr>
+            <td class="must-cell">M6 双轨评分</td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="linked">●</td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="linked-strong">●</td><td class="not-linked"></td><td class="not-linked"></td>
+          </tr>
+          <tr>
+            <td class="must-cell">M7 黑五类</td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="linked-strong">●</td>
+          </tr>
+          <tr>
+            <td class="must-cell">M8 单平台</td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+          </tr>
+          <tr>
+            <td class="must-cell">M9 本地存储</td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="linked">●</td><td class="not-linked"></td>
+          </tr>
+          <tr>
+            <td class="must-cell">M10 假数据</td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="linked">●</td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+          </tr>
+          <tr>
+            <td class="must-cell">M11 漏斗池</td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="linked-strong">●</td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+          </tr>
+          <tr>
+            <td class="must-cell">M12 7 大方向</td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="linked-strong">●</td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+          </tr>
+          <tr>
+            <td class="must-cell">M13 v2 测品</td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="linked-partial">●</td><td class="not-linked"></td><td class="linked-strong">●</td><td class="not-linked"></td>
+            <td class="linked-strong">●</td><td class="linked-strong">●</td><td class="linked-strong">●</td><td class="linked-strong">●</td>
+            <td class="linked">●</td><td class="not-linked"></td><td class="linked-strong">●</td>
+          </tr>
+          <tr>
+            <td class="must-cell">M14 中高端</td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="linked-strong">●</td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+          </tr>
+          <tr>
+            <td class="must-cell">M15 第三方</td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="linked-strong">●</td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="linked-strong">●</td><td class="not-linked"></td>
+          </tr>
+          <tr>
+            <td class="must-cell">M16 多模态</td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="linked">●</td><td class="linked-strong">●</td><td class="not-linked"></td><td class="not-linked"></td>
+            <td class="linked-strong">●</td><td class="not-linked"></td><td class="not-linked"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="font-size:11px; color:#6B5D4F; margin-top:12px;">
+      ⚠️ 注：<br>
+      • M8 单平台 = 纯 v3.1 架构决策（不引用任何方法）<br>
+      • M4/M7/M9 = 安全/合规类（只引用那哥决策 N1-N3）<br>
+      • O1-O5 跨领域方法 v3.1 暂不做（O1 圈层选品 v3.2 考虑）<br>
+      • 飞书 F1-F4 主要服务于 M13 v2（测品）和 M16（多模态）
+    </p>
+  </div>
+
+  <!-- 区块 3：流向图 -->
+  <div class="section">
+    <div class="section-title">🌊 三、数据/方法流向图（4 层）</div>
+
+    <div class="flow-diagram">
+      <!-- 第 1 层：方法来源 -->
+      <div class="flow-layer">
+        <div class="flow-box source" style="flex: 1 1 100%;">
+          <div class="flow-layer-title">📖 第 1 层：方法论来源（21 个方法）</div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+            <span class="source-item" style="flex:1; min-width:160px;">
+              <span class="source-id">G1-G8</span>
+              <span class="source-name">02-通用底层逻辑</span>
+            </span>
+            <span class="source-item" style="flex:1; min-width:160px;">
+              <span class="source-id">X1-X11</span>
+              <span class="source-name">04-小红书选品</span>
+            </span>
+            <span class="source-item" style="flex:1; min-width:160px;">
+              <span class="source-id">F1-F4</span>
+              <span class="source-name">飞书文章</span>
+            </span>
+            <span class="source-item" style="flex:1; min-width:160px;">
+              <span class="source-id">N1-N3</span>
+              <span class="source-name">那哥决策</span>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="arrow-down">↓</div>
+
+      <!-- 第 2 层：must_pass -->
+      <div class="flow-layer">
+        <div class="flow-box must" style="flex: 1 1 100%;">
+          <div class="flow-layer-title">✅ 第 2 层：v3.1 must_pass（16 条）</div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; font-family:monospace; font-size:11px;">
+            <span class="must-cell" style="padding:4px 8px; border-radius:4px;">M1</span>
+            <span class="must-cell" style="padding:4px 8px; border-radius:4px;">M2</span>
+            <span class="must-cell" style="padding:4px 8px; border-radius:4px;">M3</span>
+            <span class="must-cell" style="padding:4px 8px; border-radius:4px;">M4</span>
+            <span class="must-cell" style="padding:4px 8px; border-radius:4px;">M5</span>
+            <span class="must-cell" style="padding:4px 8px; border-radius:4px;">M6</span>
+            <span class="must-cell" style="padding:4px 8px; border-radius:4px;">M7</span>
+            <span class="must-cell" style="padding:4px 8px; border-radius:4px;">M8</span>
+            <span class="must-cell" style="padding:4px 8px; border-radius:4px;">M9</span>
+            <span class="must-cell" style="padding:4px 8px; border-radius:4px;">M10</span>
+            <span class="must-cell" style="padding:4px 8px; border-radius:4px;">M11</span>
+            <span class="must-cell" style="padding:4px 8px; border-radius:4px;">M12</span>
+            <span class="must-cell" style="padding:4px 8px; border-radius:4px;">M13 v2</span>
+            <span class="must-cell" style="padding:4px 8px; border-radius:4px;">M14</span>
+            <span class="must-cell" style="padding:4px 8px; border-radius:4px;">M15</span>
+            <span class="must-cell" style="padding:4px 8px; border-radius:4px;">M16</span>
+          </div>
+        </div>
+      </div>
+      <div class="arrow-down">↓</div>
+
+      <!-- 第 3 层：代码模块 -->
+      <div class="flow-layer">
+        <div class="flow-box module">
+          <div class="flow-layer-title">📦 第 3 层：代码模块（10+ 文件）</div>
+          <div class="flow-name">lib/methods/</div>
+          <div class="flow-detail">source-matcher / profit-calculator / reliability-scorer / fake-data-detector / pain-point-judge / follow-product / cover-test-sop</div>
+        </div>
+        <div class="flow-box module">
+          <div class="flow-name">lib/safety/</div>
+          <div class="flow-detail">account / network / data-integrity / fallback</div>
+        </div>
+        <div class="flow-box module">
+          <div class="flow-name">lib/platforms/</div>
+          <div class="flow-detail">xhs + source-1688/pdd/taobao + thirdparty/ (6 个)</div>
+        </div>
+        <div class="flow-box module">
+          <div class="flow-name">lib/analyzer.ts</div>
+          <div class="flow-detail">AI 选品分析主引擎 + 多模态接口</div>
+        </div>
+      </div>
+      <div class="arrow-down">↓</div>
+
+      <!-- 第 4 层：用户功能 -->
+      <div class="flow-layer">
+        <div class="flow-box feature">
+          <div class="flow-name">🎯 用户可见功能</div>
+          <div class="flow-detail">输入关键词 → AI 报告 → 货源反查 → 测品漏斗 → 数据安全</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 区块 4：统计 + 关键引用 -->
+  <div class="section">
+    <div class="section-title">📊 四、引用密度统计</div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num">21</div>
+        <div class="stat-label">方法总数</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">16</div>
+        <div class="stat-label">must_pass 数</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">42</div>
+        <div class="stat-label">强引用数</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">10</div>
+        <div class="stat-label">覆盖率 %</div>
+      </div>
+    </div>
+
+    <div class="key-link">
+      <div class="key-link-title">🔑 关键引用：M13 v2 测品（最强方法论密度）</div>
+      <div class="key-link-content">
+        M13 v2 一条 must_pass 引用了 <b>10 个方法</b>（X8+X10+X11+F1+F2+F3+F4+M16+N1+N3），是整个 v3.1 方法论密度最高的部分。<br>
+        这反映了"测品"是小红书选品的关键执行环节，<b>飞书文章 + 11 篇手册的精华都集中在这里</b>。
+      </div>
+    </div>
+
+    <div class="key-link">
+      <div class="key-link-title">🔑 关键引用：M1 选品功能（覆盖面最广）</div>
+      <div class="key-link-content">
+        M1 一条引用了 <b>9 个方法</b>（G1+G2+G4+G5+G7+X1+X2+X3-5+X11+M16），覆盖了 4 大方法来源（通用+小红书+那哥+多模态）。<br>
+        这是 v3.1 的<b>"主入口"</b>，几乎所有方法论都要在 M1 里被用上。
+      </div>
+    </div>
+
+    <div class="key-link">
+      <div class="key-link-title">🔑 关键引用：M3 AI 算法（方法论引擎）</div>
+      <div class="key-link-content">
+        M3 引用了 <b>8 个方法</b>（G1+G2+G4+G5+G7+X1+X2+X9+X11），是 AI 货源匹配 + 痛点判定 + 中高端原则的核心算法。<br>
+        <b>这一条 must_pass 是工具"AI 灵魂"的体现</b>。
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    方法论引用关系图 · v3.1 · 2026-06-09 · 路径：/Users/michael/AI项目/xhs-picker/v3.1-方法论引用图.html
+  </footer>
+</div>
+</body>
+</html>

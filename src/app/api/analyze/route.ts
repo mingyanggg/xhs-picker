@@ -45,8 +45,8 @@ const VALID_CATEGORIES: Category[] = [
   '高客单蓝海',
 ];
 
-// 有效的平台列表
-const VALID_PLATFORMS: PlatformId[] = ['xhs', 'kuaishou', 'douyin', 'shipinhao', 'generic'];
+// 有效的平台列表（v3 只保留小红书）
+const VALID_PLATFORMS: PlatformId[] = ['xhs', 'source-1688', 'source-pdd', 'source-taobao', 'generic'];
 
 /**
  * 验证请求参数

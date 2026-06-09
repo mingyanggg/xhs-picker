@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>选品流程 · 卖家视角</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #F5F1E8 0%, #EDE5D3 100%);
+    color: #2A1F14;
+    padding: 32px 24px;
+    min-height: 100vh;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 {
+    font-size: 32px;
+    color: #2A1F14;
+    margin-bottom: 8px;
+    text-align: center;
+    font-weight: 700;
+  }
+  .subtitle {
+    color: #6B5D4F;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  /* 大步骤卡片 */
+  .big-step {
+    background: #FFFFFF;
+    border-radius: 18px;
+    padding: 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    position: relative;
+  }
+  .big-step-num {
+    position: absolute;
+    top: -20px; left: 24px;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: #D88C5A;
+    color: #FFFFFF;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 700;
+    box-shadow: 0 4px 12px rgba(216, 140, 90, 0.3);
+  }
+  .big-step-title {
+    font-size: 22px;
+    color: #2A1F14;
+    font-weight: 700;
+    margin-top: 12px;
+    margin-bottom: 8px;
+  }
+  .big-step-tagline {
+    font-size: 14px;
+    color: #D88C5A;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .big-step-desc {
+    font-size: 14px;
+    color: #4A3D2E;
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+
+  /* 子步骤 */
+  .sub-steps {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .sub-step {
+    background: #FAF7F0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    border-left: 3px solid #D88C5A;
+  }
+  .sub-step-num {
+    font-size: 11px;
+    color: #D88C5A;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .sub-step-name {
+    font-size: 14px;
+    color: #2A1F14;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .sub-step-detail {
+    font-size: 12px;
+    color: #6B5D4F;
+    line-height: 1.5;
+  }
+
+  /* 提示框 */
+  .tip {
+    background: #FFF5E8;
+    border-left: 4px solid #D88C5A;
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #2A1F14;
+  }
+  .tip::before { content: "💡 "; }
+  .warning {
+    background: #F4D5D0;
+    border-left: 4px solid #C84B31;
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #8B1A0F;
+  }
+  .warning::before { content: "⚠️ "; }
+
+  /* 决策块 */
+  .decision-box {
+    background: #FFE5C0;
+    border: 2px dashed #B89968;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 16px 0;
+    text-align: center;
+  }
+  .decision-q {
+    font-size: 14px;
+    color: #8B5A1A;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .decision-yes, .decision-no {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 6px;
+  }
+  .decision-yes {
+    background: #DCEAD8;
+    color: #2D5016;
+  }
+  .decision-no {
+    background: #F4D5D0;
+    color: #8B1A0F;
+  }
+
+  /* 时间线 */
+  .timeline {
+    background: #2A1F14;
+    color: #F5F1E8;
+    border-radius: 18px;
+    padding: 24px;
+    margin-top: 32px;
+  }
+  .timeline h3 {
+    color: #D88C5A;
+    font-size: 18px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .timeline-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .timeline-time {
+    color: #D88C5A;
+    font-weight: 700;
+    min-width: 60px;
+  }
+
+  /* 底部价值 */
+  .value-box {
+    background: linear-gradient(135deg, #D88C5A 0%, #B89968 100%);
+    color: #FFFFFF;
+    border-radius: 18px;
+    padding: 24px;
+    margin-top: 24px;
+    text-align: center;
+  }
+  .value-box h3 { font-size: 18px; margin-bottom: 8px; }
+  .value-box p { font-size: 13px; opacity: 0.95; }
+
+  footer {
+    text-align: center;
+    margin-top: 24px;
+    color: #6B5D4F;
+    font-size: 11px;
+  }
+
+  @media (max-width: 700px) {
+    .sub-steps { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🎯 小红书选品 · 卖家工作流</h1>
+  <p class="subtitle">从"不知道卖啥"到"开始卖货"的 5 步流程 · 6 周 / 95-120 小时</p>
+
+  <!-- 步骤 1 -->
+  <div class="big-step">
+    <div class="big-step-num">1</div>
+    <div class="big-step-title">📝 我想卖啥？</div>
+    <div class="big-step-tagline">——输入关键词 + 选品类 + 选方向，30 秒判断能不能做</div>
+    <div class="big-step-desc">
+      你只做 3 件事：<br>
+      ① 输入一个产品关键词（比如"防晒霜""瑜伽服""手机壳"）<br>
+      ② 选 1 个品类（9 大品类：实物/半标品/虚拟/知识付费/大牌平替/新奇特/周期/男性蓝海/高客单蓝海）<br>
+      ③ 选 1-2 个方向（7 大方向：功能性半标品/红海蓝海/美妆/自带流量/大牌平替/新奇特/知识付费）
+    </div>
+    <div class="warning">
+      如果你输入"减肥药""壮阳药""医美"——工具会**立刻弹出红色警告**（黑五类不推广 + 不提供货源 + 不引导引流方式）。这步不用你判断，工具自动拦截。
+    </div>
+    <div class="tip">
+      不确定选哪个方向？工具会根据"你输入的关键词 + 行业方法论"自动推荐 1-2 个适合的方向。
+    </div>
+  </div>
+
+  <!-- 步骤 2 -->
+  <div class="big-step">
+    <div class="big-step-num">2</div>
+    <div class="big-step-title">🔍 这个品能爆吗？</div>
+    <div class="big-step-tagline">——AI 看市场数据 + 商家图，判断"卖这个能不能赚钱"</div>
+    <div class="big-step-desc">
+      工具自动跑 3 件事，**你不用操作**：
+    </div>
+    <div class="sub-steps">
+      <div class="sub-step">
+        <div class="sub-step-num">2.1 · 看数字</div>
+        <div class="sub-step-name">抓 7 个数据源</div>
+        <div class="sub-step-detail">小红书主数据 + 千瓜品类榜 + 灰豚商品榜 + 蝉妈妈视频榜 + 巨量算数 + 抖音精选联盟 + 小红书 APP 搜索</div>
+      </div>
+      <div class="sub-step">
+        <div class="sub-step-num">2.2 · AI 读数字</div>
+        <div class="sub-step-name">文本分析</div>
+        <div class="sub-step-detail">痛点 vs 痒点 / 蓝海三要素（稳定流量+产品很差+稳定变现）/ 跟品爆品 / 中高端定位（拒绝低价走量）</div>
+      </div>
+      <div class="sub-step">
+        <div class="sub-step-num">2.3 · AI 看图</div>
+        <div class="sub-step-name">视觉分析</div>
+        <div class="sub-step-detail">候选品封面图 + 商家商品主图（识别 P 图/盗图/低质图）</div>
+      </div>
+      <div class="sub-step">
+        <div class="sub-step-num">2.4 · 出报告</div>
+        <div class="sub-step-name">4 板块输出</div>
+        <div class="sub-step-detail">市场概况 / 爆款潜力 / 选品建议 / 货源推荐</div>
+      </div>
+    </div>
+    <div class="decision-box">
+      <div class="decision-q">❓ 这个品能"中高端 + 痛点 + 蓝海"3 要素都满足吗？</div>
+      <div class="decision-no">❌ 不满足 → 直接放弃，看下一个品</div>
+      <div class="decision-yes">✅ 满足 → 进入第 3 步</div>
+    </div>
+  </div>
+
+  <!-- 步骤 3 -->
+  <div class="big-step">
+    <div class="big-step-num">3</div>
+    <div class="big-step-title">🛒 在哪能拿到货？</div>
+    <div class="big-step-tagline">——AI 帮你找 1688/拼多多/淘宝 同款 + 算利润 + 评商家</div>
+    <div class="big-step-desc">
+      选中候选品后，工具自动反查 3 个货源平台：
+    </div>
+    <div class="sub-steps">
+      <div class="sub-step">
+        <div class="sub-step-num">3.1 · 同款匹配</div>
+        <div class="sub-step-name">找货源</div>
+        <div class="sub-step-detail">工具在 1688/拼多多/淘宝 自动找同款/相似款 + 售价 + 起订量</div>
+      </div>
+      <div class="sub-step">
+        <div class="sub-step-num">3.2 · 商家打分</div>
+        <div class="sub-step-name">双轨评分</div>
+        <div class="sub-step-detail">小红书商家 + 货源商家 **分别 0-100 打分**（销量/评价/经营时长/AI 风险）</div>
+      </div>
+      <div class="sub-step">
+        <div class="sub-step-num">3.3 · 算利润</div>
+        <div class="sub-step-name">利润空间</div>
+        <div class="sub-step-detail">售价-成本-物流-平台费 = 净利润 + 投资回报率</div>
+      </div>
+      <div class="sub-step">
+        <div class="sub-step-num">3.4 · 验真伪</div>
+        <div class="sub-step-name">假数据检测</div>
+        <div class="sub-step-detail">24h 突然爆 10x → 标"疑似刷量" + 传统电商平台交叉验证</div>
+      </div>
+    </div>
+    <div class="tip">
+      **双轨评分**是这个工具的关键差异化：别家只评"小红书商家"，我们同时评"货源商家"——避免你被货源端坑。
+    </div>
+  </div>
+
+  <!-- 步骤 4 -->
+  <div class="big-step">
+    <div class="big-step-num">4</div>
+    <div class="big-step-title">🧪 怎么知道这个品能卖？</div>
+    <div class="big-step-tagline">——【有颜】测 5 条，【有用】多测几天，每天 3 个新品入库</div>
+    <div class="big-step-desc">
+      工具自动判断你的品是 **【有颜】**（饰品/服装/手机壳/鞋子/宝宝用品）还是 **【有用】**（功效品/工具/服务），然后用**不同的测品策略**：
+    </div>
+    <div class="sub-steps">
+      <div class="sub-step">
+        <div class="sub-step-num">👗 【有颜】测品</div>
+        <div class="sub-step-name">重点：选款式</div>
+        <div class="sub-step-detail">小红书搜产品名 → 按"最热"排序 → 找 2-3 张同风格图 → 1:1 模仿（文字+颜色+布局）→ **5 条左右**测试</div>
+      </div>
+      <div class="sub-step">
+        <div class="sub-step-num">🛠️ 【有用·已爆】测品</div>
+        <div class="sub-step-name">改字派</div>
+        <div class="sub-step-detail">直接在原爆款标题改几个字 + 标签 → 多测几天</div>
+      </div>
+      <div class="sub-step">
+        <div class="sub-step-num">🛠️ 【有用·未爆】测品</div>
+        <div class="sub-step-name">卖点重组</div>
+        <div class="sub-step-detail">4 步 SOP：①拆爆款标题卖点 ②找核心属性 ③替换修饰 ④重组为新标题 → **多测几条**</div>
+      </div>
+      <div class="sub-step">
+        <div class="sub-step-num">📅 漏斗池</div>
+        <div class="sub-step-name">日常运营</div>
+        <div class="sub-step-detail">每天 3+ 新品入库 + 9 时点上品日历（早 8/9:30/11:30/14/16/18/20/21/22）+ 1-3-7 天数据周期</div>
+      </div>
+    </div>
+    <div class="warning">
+      **不做 1:1 完全搬运**！这是合规底线——你 6/9 决策："我们是选品平台，不是笔记生产平台"。工具只帮你**分析 + 测品**，不帮你**搬运爆款**。
+    </div>
+  </div>
+
+  <!-- 步骤 5 -->
+  <div class="big-step">
+    <div class="big-step-num">5</div>
+    <div class="big-step-title">🛡️ 数据安全 + 自动降级</div>
+    <div class="big-step-tagline">——账号/IP/数据/降级 4 层级，全程保护不被封</div>
+    <div class="big-step-desc">
+      **你不用管的技术细节**——工具自动跑：
+    </div>
+    <div class="sub-steps">
+      <div class="sub-step">
+        <div class="sub-step-num">🔐 账号层</div>
+        <div class="sub-step-name">Cookie 加密</div>
+        <div class="sub-step-detail">你的账号信息加密存本地，不与他人混用</div>
+      </div>
+      <div class="sub-step">
+        <div class="sub-step-num">🌐 IP 层</div>
+        <div class="sub-step-name">频率自适应</div>
+        <div class="sub-step-detail">操作速度 ≤ 真人节奏，避免被风控</div>
+      </div>
+      <div class="sub-step">
+        <div class="sub-step-num">📊 数据层</div>
+        <div class="sub-step-name">假数据过滤</div>
+        <div class="sub-step-detail">刷量数据自动标红 + 数据源可回查</div>
+      </div>
+      <div class="sub-step">
+        <div class="sub-step-num">⚡ 降级层</div>
+        <div class="sub-step-name">手动备份</div>
+        <div class="sub-step-detail">CDP 失败立刻降级为手动粘贴 + 工具跳转</div>
+      </div>
+    </div>
+    <div class="tip">
+      你不会看到"账号被封"这种事——**降级是默认行为**，不是异常。
+    </div>
+  </div>
+
+  <!-- 时间线 -->
+  <div class="timeline">
+    <h3>⏱️ 整个流程大概多久？</h3>
+    <div class="timeline-row">
+      <div class="timeline-time">Day 1</div>
+      <div>输入关键词 + 选品类方向 → 30 秒判断能不能做</div>
+    </div>
+    <div class="timeline-row">
+      <div class="timeline-time">Day 1-2</div>
+      <div>看 AI 出的"市场报告 + 爆款分析" → 决定要不要继续</div>
+    </div>
+    <div class="timeline-row">
+      <div class="timeline-time">Day 2-3</div>
+      <div>看 1688/拼多多/淘宝 同款 + 利润 → 选定货源</div>
+    </div>
+    <div class="timeline-row">
+      <div class="timeline-time">Day 3-15</div>
+      <div>每天 3+ 新品入库 + 上品 9 时点 → 看 1-3-7 天数据</div>
+    </div>
+    <div class="timeline-row">
+      <div class="timeline-time">Day 15+</div>
+      <div>7 天 0 销的品自动标红 → 决定放弃/继续</div>
+    </div>
+  </div>
+
+  <!-- 价值 -->
+  <div class="value-box">
+    <h3>🎁 这个工具给你什么？</h3>
+    <p>① 不用你自己读懂 11 篇方法论 + 飞书文章 → AI 帮你读了并落地成可执行步骤</p>
+    <p>② 不用自己注册 6 个第三方数据平台 → 工具集成 6 个且自动抓数据</p>
+    <p>③ 不用自己看 1688/拼多多/淘宝 找货源 → AI 自动反查 + 算利润 + 评商家</p>
+    <p>④ 不用自己测品看数据 → 漏斗池 + 上品日历 + 1-3-7 数据周期全自动</p>
+    <p>⑤ 不用怕账号被封 → 极致安全 4 层级 + 自动降级</p>
+  </div>
+
+  <footer>
+    卖家视角流程图 · 2026-06-09 · 路径：/Users/michael/AI项目/xhs-picker/v3.1-流程图-卖家视角.html
+  </footer>
+</div>
+</body>
+</html>

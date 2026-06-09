@@ -95,11 +95,9 @@ export default function BrowserPanel({
 
   const quickUrls = [
     { name: '小红书', url: 'https://www.xiaohongshu.com/explore' },
-    { name: '抖音', url: 'https://www.douyin.com/discover' },
-    { name: '快手', url: 'https://www.kuaishou.com' },
-    { name: '千瓜', url: 'https://www.qianhua.io' },
-    { name: '灰豚', url: 'https://www.huitun.com' },
-    { name: '蝉妈妈', url: 'https://www.chanmm.com' },
+    { name: '1688', url: 'https://www.1688.com' },
+    { name: '拼多多', url: 'https://www.pinduoduo.com' },
+    { name: '淘宝', url: 'https://www.taobao.com' },
   ];
 
   return (

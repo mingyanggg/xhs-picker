@@ -1,10 +1,12 @@
 /**
- * 黑五类关键词检测模块 - v2 按平台分类
+ * 黑五类关键词检测模块 - v3.1 小红书专用
  *
  * 功能：
  * - 关键词库覆盖：药品/医疗器械/增高/壮阳/蓝帽子/医美/风水占卜等
- * - 按平台分别定义拦截规则（小红书最严/抖音其次/快手相对宽松/视频号依赖微信生态）
- * - 输入检测 → 红色警告弹窗 → 说明各平台禁推原因
+ * - v3.1 只检测小红书（xhs）平台
+ * - 输入检测 → 红色警告弹窗 → 不推广+不提供货源+不引导引流
+ *
+ * 决策溯源：6/9 那哥拍板，工具必须弹风险警告
  */
 
 import type {
@@ -30,7 +32,7 @@ type BlacklistKeyword = {
   riskNote: string;
   /** 适用的严格平台 */
   strictPlatforms: PlatformId[];
-  /** 适用的宽松平台（相对宽松但仍需警告） */
+  /** 适用的宽松平台 */
   loosePlatforms: PlatformId[];
 };
 
@@ -43,8 +45,8 @@ const BLACKLIST_KEYWORDS: BlacklistKeyword[] = [
     level: 'blocked',
     reason: '药品类属于严格管控，违规推广面临法律风险',
     riskNote: '违反《广告法》，可能面临罚款、下架、账号封禁',
-    strictPlatforms: ['xhs', 'douyin', 'shipinhao'],
-    loosePlatforms: ['kuaishou'],
+    strictPlatforms: ['xhs'],
+    loosePlatforms: [],
   },
   {
     keyword: '壮阳',
@@ -52,7 +54,7 @@ const BLACKLIST_KEYWORDS: BlacklistKeyword[] = [
     level: 'blocked',
     reason: '涉及虚假宣传和违规药品推广',
     riskNote: '违反《广告法》，可能面临法律诉讼',
-    strictPlatforms: ['xhs', 'douyin', 'kuaishou', 'shipinhao'],
+    strictPlatforms: ['xhs'],
     loosePlatforms: [],
   },
   {
@@ -61,7 +63,7 @@ const BLACKLIST_KEYWORDS: BlacklistKeyword[] = [
     level: 'blocked',
     reason: '虚假宣传，药品类严格管控',
     riskNote: '违反《广告法》，可能面临法律诉讼',
-    strictPlatforms: ['xhs', 'douyin', 'kuaishou', 'shipinhao'],
+    strictPlatforms: ['xhs'],
     loosePlatforms: [],
   },
 
@@ -72,7 +74,7 @@ const BLACKLIST_KEYWORDS: BlacklistKeyword[] = [
     level: 'blocked',
     reason: '医疗器械推广需要资质，违规推广面临法律风险',
     riskNote: '无资质推广医疗器械违法，可能面临刑事责任',
-    strictPlatforms: ['xhs', 'douyin', 'kuaishou', 'shipinhao'],
+    strictPlatforms: ['xhs'],
     loosePlatforms: [],
   },
   {
@@ -81,8 +83,8 @@ const BLACKLIST_KEYWORDS: BlacklistKeyword[] = [
     level: 'restricted',
     reason: '医疗器械类，需要资质才能推广',
     riskNote: '无资质推广可能面临平台处罚',
-    strictPlatforms: ['xhs', 'douyin'],
-    loosePlatforms: ['kuaishou', 'shipinhao'],
+    strictPlatforms: ['xhs'],
+    loosePlatforms: [],
   },
 
   // 美容类
@@ -92,7 +94,7 @@ const BLACKLIST_KEYWORDS: BlacklistKeyword[] = [
     level: 'blocked',
     reason: '医美类需要资质，涉及医疗行为',
     riskNote: '违规推广医美可能面临法律诉讼和平台封禁',
-    strictPlatforms: ['xhs', 'douyin', 'kuaishou', 'shipinhao'],
+    strictPlatforms: ['xhs'],
     loosePlatforms: [],
   },
   {
@@ -101,7 +103,7 @@ const BLACKLIST_KEYWORDS: BlacklistKeyword[] = [
     level: 'blocked',
     reason: '涉及违规宣传和敏感内容',
     riskNote: '违反平台规定，可能面临封禁',
-    strictPlatforms: ['xhs', 'douyin', 'kuaishou', 'shipinhao'],
+    strictPlatforms: ['xhs'],
     loosePlatforms: [],
   },
 
@@ -112,8 +114,8 @@ const BLACKLIST_KEYWORDS: BlacklistKeyword[] = [
     level: 'restricted',
     reason: '保健食品需有资质，虚假宣传违法',
     riskNote: '违规宣传保健食品可能面临罚款和平台处罚',
-    strictPlatforms: ['xhs', 'douyin'],
-    loosePlatforms: ['kuaishou', 'shipinhao'],
+    strictPlatforms: ['xhs'],
+    loosePlatforms: [],
   },
   {
     keyword: '特殊配方奶粉',
@@ -121,8 +123,8 @@ const BLACKLIST_KEYWORDS: BlacklistKeyword[] = [
     level: 'restricted',
     reason: '特殊医学用途食品需资质',
     riskNote: '违规推广可能面临法律诉讼',
-    strictPlatforms: ['xhs', 'douyin', 'shipinhao'],
-    loosePlatforms: ['kuaishou'],
+    strictPlatforms: ['xhs'],
+    loosePlatforms: [],
   },
 
   // 医美全类目
@@ -132,8 +134,8 @@ const BLACKLIST_KEYWORDS: BlacklistKeyword[] = [
     level: 'restricted',
     reason: '医美推广需资质，不同平台政策不同',
     riskNote: '无资质推广医美项目违法',
-    strictPlatforms: ['xhs', 'douyin', 'shipinhao'],
-    loosePlatforms: ['kuaishou'],
+    strictPlatforms: ['xhs'],
+    loosePlatforms: [],
   },
   {
     keyword: '玻尿酸',
@@ -141,8 +143,8 @@ const BLACKLIST_KEYWORDS: BlacklistKeyword[] = [
     level: 'restricted',
     reason: '医美注射类产品需资质',
     riskNote: '违规推广可能面临平台处罚',
-    strictPlatforms: ['xhs', 'douyin'],
-    loosePlatforms: ['kuaishou', 'shipinhao'],
+    strictPlatforms: ['xhs'],
+    loosePlatforms: [],
   },
 
   // 风水占卜类
@@ -152,7 +154,7 @@ const BLACKLIST_KEYWORDS: BlacklistKeyword[] = [
     level: 'blocked',
     reason: '封建迷信内容违规',
     riskNote: '违反《广告法》，可能面临平台封禁',
-    strictPlatforms: ['xhs', 'douyin', 'kuaishou', 'shipinhao'],
+    strictPlatforms: ['xhs'],
     loosePlatforms: [],
   },
 
@@ -163,7 +165,7 @@ const BLACKLIST_KEYWORDS: BlacklistKeyword[] = [
     level: 'blocked',
     reason: '违法内容，触碰法律红线',
     riskNote: '可能面临刑事责任',
-    strictPlatforms: ['xhs', 'douyin', 'kuaishou', 'shipinhao'],
+    strictPlatforms: ['xhs'],
     loosePlatforms: [],
   },
 
@@ -174,8 +176,8 @@ const BLACKLIST_KEYWORDS: BlacklistKeyword[] = [
     level: 'warning',
     reason: '食品类减肥产品，虚假宣传风险高',
     riskNote: '效果夸大可能违反《广告法》',
-    strictPlatforms: ['xhs', 'douyin'],
-    loosePlatforms: ['kuaishou', 'shipinhao'],
+    strictPlatforms: ['xhs'],
+    loosePlatforms: [],
   },
   {
     keyword: '瘦身',
@@ -183,8 +185,8 @@ const BLACKLIST_KEYWORDS: BlacklistKeyword[] = [
     level: 'warning',
     reason: '减肥类泛词，需结合上下文判断',
     riskNote: '可能触发平台审核',
-    strictPlatforms: ['xhs', 'douyin'],
-    loosePlatforms: ['kuaishou', 'shipinhao'],
+    strictPlatforms: ['xhs'],
+    loosePlatforms: [],
   },
 
   // 美容仪类
@@ -194,8 +196,8 @@ const BLACKLIST_KEYWORDS: BlacklistKeyword[] = [
     level: 'warning',
     reason: '家用美容仪需有资质认证',
     riskNote: '无资质推广可能面临平台处罚',
-    strictPlatforms: ['xhs', 'douyin'],
-    loosePlatforms: ['kuaishou', 'shipinhao'],
+    strictPlatforms: ['xhs'],
+    loosePlatforms: [],
   },
 ];
 
@@ -203,9 +205,9 @@ const BLACKLIST_KEYWORDS: BlacklistKeyword[] = [
 
 const PLATFORM_NAMES: Record<PlatformId, string> = {
   xhs: '小红书',
-  kuaishou: '快手',
-  douyin: '抖音',
-  shipinhao: '视频号',
+  'source-1688': '1688',
+  'source-pdd': '拼多多',
+  'source-taobao': '淘宝',
   generic: '通用',
 };
 
@@ -224,12 +226,10 @@ function normalizeText(text: string): string {
 function matchKeyword(input: string, keyword: BlacklistKeyword): boolean {
   const normalizedInput = normalizeText(input);
 
-  // 检查主关键词
   if (normalizedInput.includes(normalizeText(keyword.keyword))) {
     return true;
   }
 
-  // 检查变体
   for (const variant of keyword.variants) {
     if (normalizedInput.includes(normalizeText(variant))) {
       return true;
@@ -242,9 +242,7 @@ function matchKeyword(input: string, keyword: BlacklistKeyword): boolean {
 /**
  * 获取匹配关键词的违规信息
  */
-function getMatchedRule(
-  input: string
-): BlacklistKeyword | null {
+function getMatchedRule(input: string): BlacklistKeyword | null {
   const normalizedInput = normalizeText(input);
 
   for (const keyword of BLACKLIST_KEYWORDS) {
@@ -260,9 +258,6 @@ function getMatchedRule(
 
 /**
  * 检测关键词是否为黑五类
- *
- * @param keyword 用户输入的关键词
- * @returns 是否为黑五类
  */
 export function isBlacklisted(keyword: string): boolean {
   return getMatchedRule(keyword) !== null;
@@ -270,9 +265,6 @@ export function isBlacklisted(keyword: string): boolean {
 
 /**
  * 获取黑五类违规信息
- *
- * @param keyword 用户输入的关键词
- * @returns 违规信息，如果非黑五类返回null
  */
 export function getBlacklistInfo(keyword: string): BlacklistKeyword | null {
   return getMatchedRule(keyword);
@@ -281,9 +273,10 @@ export function getBlacklistInfo(keyword: string): BlacklistKeyword | null {
 /**
  * 获取针对特定平台的黑五类警告
  *
- * @param keyword 用户输入的关键词
- * @param platformIds 目标平台列表
- * @returns 各平台的黑五类警告
+ * v3.1 升级：
+ * - 不推广
+ * - 不提供货源搜索
+ * - 不引导引流方式
  */
 export function getPlatformWarnings(
   keyword: string,
@@ -302,21 +295,19 @@ export function getPlatformWarnings(
     const isLoose = matchedRule.loosePlatforms.includes(platformId);
 
     if (isStrict) {
-      // 严格平台：blocked
       warnings.push({
         platformId,
         platformName: PLATFORM_NAMES[platformId],
         level: matchedRule.level,
-        message: `⚠️ 【${PLATFORM_NAMES[platformId]}禁推】${matchedRule.keyword}属于${matchedRule.reason}，违规推广面临风险`,
+        message: `⚠️ 【${PLATFORM_NAMES[platformId]}禁推+禁货源】${matchedRule.keyword}属于${matchedRule.reason}，违规推广面临风险，工具不提供货源搜索`,
         reason: matchedRule.reason,
       });
     } else if (isLoose) {
-      // 相对宽松平台：warning
       warnings.push({
         platformId,
         platformName: PLATFORM_NAMES[platformId],
         level: 'warning',
-        message: `⚡ 【${PLATFORM_NAMES[platformId]}注意】${matchedRule.keyword}需资质，建议谨慎推广`,
+        message: `⚡ 【${PLATFORM_NAMES[platformId]}注意】${matchedRule.keyword}需资质，建议谨慎`,
         reason: matchedRule.reason,
       });
     }
@@ -326,7 +317,7 @@ export function getPlatformWarnings(
 }
 
 /**
- * 获取所有黑五类关键词列表（用于UI展示）
+ * 获取所有黑五类关键词列表
  */
 export function getAllBlacklistKeywords(): { keyword: string; level: BlacklistLevel; reason: string }[] {
   return BLACKLIST_KEYWORDS.map((k) => ({
@@ -338,9 +329,6 @@ export function getAllBlacklistKeywords(): { keyword: string; level: BlacklistLe
 
 /**
  * 获取平台的黑五类规则
- *
- * @param platformId 平台ID
- * @returns 该平台的黑五类规则
  */
 export function getPlatformBlacklistRules(platformId: PlatformId): BlacklistRule[] {
   const rules: BlacklistRule[] = [];
@@ -364,10 +352,8 @@ export function getPlatformBlacklistRules(platformId: PlatformId): BlacklistRule
   return rules;
 }
 
-// ============== UI组件辅助 ==============
-
 /**
- * 生成警告消息文本（用于显示）
+ * 生成警告消息文本
  */
 export function formatWarningMessage(warnings: PlatformBlacklistWarning[]): string {
   if (warnings.length === 0) {
@@ -382,12 +368,13 @@ export function formatWarningMessage(warnings: PlatformBlacklistWarning[]): stri
   }
 
   lines.push('\n💡 建议：选择非黑五类关键词，或确保具备相关推广资质');
+  lines.push('\n⚠️ 工具不提供黑五类产品的货源搜索服务');
 
   return lines.join('');
 }
 
 /**
- * 检查关键词是否需要警告（非完全禁止）
+ * 检查关键词是否需要警告
  */
 export function needsWarning(keyword: string, platformId: PlatformId): boolean {
   const matchedRule = getMatchedRule(keyword);

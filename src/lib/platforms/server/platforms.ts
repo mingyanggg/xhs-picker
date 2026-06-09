@@ -2,25 +2,24 @@
  * 服务端平台抓取器（包含 Playwright 依赖）
  *
  * ⚠️ 此文件只能被服务端代码导入，不能被客户端使用
- * 导入路径：src/lib/platforms/server/platforms.ts
  */
 
 import type { Platform, PlatformId, Category, ScrapedData } from '../types';
 import { xhsPlatform } from '../xhs';
-import { kuaishouPlatform } from '../kuaishou';
-import { douyinPlatform } from '../douyin';
-import { shipinhaoPlatform } from '../shipinhao';
-import { genericPlatform } from '../generic';
+import { source1688Platform } from '../source-1688';
+import { sourcePddPlatform } from '../source-pdd';
+import { sourceTaobaoPlatform } from '../source-taobao';
+import { PLATFORM_NAMES } from '../index';
 
 // ============== 平台注册表 ==============
 
 /** 平台注册表（服务端专用） */
 const PLATFORMS: Record<PlatformId, Platform> = {
   xhs: xhsPlatform,
-  kuaishou: kuaishouPlatform,
-  douyin: douyinPlatform,
-  shipinhao: shipinhaoPlatform,
-  generic: genericPlatform,
+  'source-1688': source1688Platform,
+  'source-pdd': sourcePddPlatform,
+  'source-taobao': sourceTaobaoPlatform,
+  generic: { platformId: 'generic', displayName: '通用', searchUrl: () => '', scrape: async () => ({ status: 'pending', keyword: '', platformId: 'generic', contents: [], products: [], scrapedAt: 0, isManualMode: true }), platformBlacklist: [], platformNotes: '', fallbackToGeneric: false },
 };
 
 /** 获取平台实例 */
@@ -32,6 +31,8 @@ export function getPlatform(platformId: PlatformId): Platform {
 export function getAllPlatforms(): Platform[] {
   return Object.values(PLATFORMS);
 }
+
+export { PLATFORM_NAMES };
 
 /**
  * 并行抓取各平台数据（服务端专用）

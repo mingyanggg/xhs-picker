@@ -52,9 +52,9 @@ function buildSystemPrompt(): string {
   "market": { // 市场概况
     "category": "品类",
     "keyword": "关键词",
-    "totalContentCount": {"xhs": 数字, "kuaishou": 数字, "douyin": 数字, "shipinhao": 数字},
-    "avgEngagement": {"xhs": 数字, "kuaishou": 数字, "douyin": 数字, "shipinhao": 数字},
-    "searchIndex": {"xhs": 数字, "kuaishou": 数字, "douyin": 数字, "shipinhao": 数字},
+    "totalContentCount": {"xhs": 数字, "source-1688": 数字, "source-pdd": 数字, "source-taobao": 数字},
+    "avgEngagement": {"xhs": 数字, "source-1688": 数字, "source-pdd": 数字, "source-taobao": 数字},
+    "searchIndex": {"xhs": 数字, "source-1688": 数字, "source-pdd": 数字, "source-taobao": 数字},
     "analyzedAt": 时间戳
   },
   "blueOceanCompare": [ // 全平台蓝海对比（每个平台一行）

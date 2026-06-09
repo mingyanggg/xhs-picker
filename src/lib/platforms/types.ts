@@ -11,7 +11,7 @@
 // ============== 枚举定义 ==============
 
 /** 支持的平台ID */
-export type PlatformId = 'xhs' | 'kuaishou' | 'douyin' | 'shipinhao' | 'generic';
+export type PlatformId = 'xhs' | 'source-1688' | 'source-pdd' | 'source-taobao' | 'generic';
 
 /** 9大一级品类 */
 export type Category =

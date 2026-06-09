@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>v3.1 方法论引用关系图 | XHS Picker</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: -apple-system, "PingFang SC", sans-serif; background: #fafaf9; }
+  .node { transition: all 0.3s; cursor: pointer; }
+  .node:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+  .source { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; }
+  .method { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border: 2px solid #3b82f6; }
+  .mustpass { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border: 2px solid #ec4899; }
+  .title { font-weight: 600; }
+  .arrow { stroke: #78716c; stroke-width: 2; fill: none; }
+  .arrow-thick { stroke: #ec4899; stroke-width: 3; fill: none; }
+  svg { background: #fafaf9; }
+  .legend { background: white; border: 1px solid #e7e5e4; border-radius: 8px; padding: 12px; }
+</style>
+</head>
+<body class="p-6">
+<div class="max-w-7xl mx-auto">
+  <h1 class="text-3xl font-bold text-stone-800 mb-2">v3.1 方法论引用关系图</h1>
+  <p class="text-stone-600 mb-4">11 篇选品手册 + 飞书文章 → 方法论节点 → v3.1 must_pass 映射</p>
+
+  <!-- 图例 -->
+  <div class="legend mb-6 inline-block">
+    <div class="flex items-center gap-2 text-sm mb-1">
+      <div class="w-4 h-4 rounded source"></div><span>原始材料（手册/文章）</span>
+    </div>
+    <div class="flex items-center gap-2 text-sm mb-1">
+      <div class="w-4 h-4 rounded method"></div><span>方法论节点（脱敏）</span>
+    </div>
+    <div class="flex items-center gap-2 text-sm">
+      <div class="w-4 h-4 rounded mustpass"></div><span>v3.1 must_pass（M1-M16）</span>
+    </div>
+  </div>
+
+  <!-- SVG 画布 -->
+  <div class="bg-white rounded-lg shadow p-4 overflow-x-auto">
+    <svg width="1800" height="1400" viewBox="0 0 1800 1400">
+      <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#78716c"/>
+        </marker>
+        <marker id="arrowhead-pink" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#ec4899"/>
+        </marker>
+      </defs>
+
+      <!-- ==================== 左侧：原始材料 ==================== -->
+      <text x="50" y="40" class="text-xl font-bold" fill="#44403c">【第 1 层】原始材料</text>
+
+      <!-- 11 篇手册 -->
+      <g class="node source" onclick="">
+        <rect x="50" y="80" width="280" height="50" rx="8"/>
+        <text x="190" y="105" text-anchor="middle" class="title" fill="#78350f">02 选品通用底层逻辑</text>
+        <text x="190" y="120" text-anchor="middle" font-size="10" fill="#92400e">（已读）</text>
+      </g>
+
+      <g class="node source">
+        <rect x="50" y="150" width="280" height="50" rx="8"/>
+        <text x="190" y="175" text-anchor="middle" class="title" fill="#78350f">04 小红书选品</text>
+        <text x="190" y="190" text-anchor="middle" font-size="10" fill="#92400e">（已读·核心）</text>
+      </g>
+
+      <g class="node source">
+        <rect x="50" y="220" width="280" height="50" rx="8"/>
+        <text x="190" y="245" text-anchor="middle" class="title" fill="#78350f">11 其他选品方法</text>
+        <text x="190" y="260" text-anchor="middle" font-size="10" fill="#92400e">（已读）</text>
+      </g>
+
+      <g class="node source" opacity="0.5">
+        <rect x="50" y="290" width="280" height="50" rx="8"/>
+        <text x="190" y="315" text-anchor="middle" class="title" fill="#78350f">00 写在前面</text>
+        <text x="190" y="330" text-anchor="middle" font-size="10" fill="#92400e">（索引）</text>
+      </g>
+
+      <g class="node source" opacity="0.4">
+        <rect x="50" y="360" width="280" height="40" rx="8"/>
+        <text x="190" y="385" text-anchor="middle" class="title" fill="#78350f">01/03/05-10 8 篇</text>
+        <text x="190" y="400" text-anchor="middle" font-size="10" fill="#92400e">（未读·v3.1 不必）</text>
+      </g>
+
+      <!-- 飞书文章 -->
+      <g class="node source" style="background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border: 2px solid #db2777;">
+        <rect x="50" y="450" width="280" height="60" rx="8"/>
+        <text x="190" y="475" text-anchor="middle" class="title" fill="#831843">飞书文章</text>
+        <text x="190" y="495" text-anchor="middle" font-size="11" fill="#9d174d">《12天23.6万·测品方法解析》</text>
+        <text x="190" y="510" text-anchor="middle" font-size="10" fill="#9d174d">（小刀轻创·已读·核心）</text>
+      </g>
+
+      <!-- ==================== 中间：方法论节点 ==================== -->
+      <text x="450" y="40" class="text-xl font-bold" fill="#44403c">【第 2 层】方法论节点（脱敏·去 IP）</text>
+
+      <!-- 方法论 1：通用选品公式 -->
+      <g class="node method">
+        <rect x="450" y="80" width="280" height="50" rx="8"/>
+        <text x="590" y="105" text-anchor="middle" class="title" fill="#1e3a8a">通用选品公式</text>
+        <text x="590" y="120" text-anchor="middle" font-size="10" fill="#1e40af">市场+竞品+差异化+利润</text>
+      </g>
+
+      <!-- 方法论 2：选品漏斗池 -->
+      <g class="node method">
+        <rect x="450" y="150" width="280" height="50" rx="8"/>
+        <text x="590" y="175" text-anchor="middle" class="title" fill="#1e3a8a">选品漏斗池 8 层</text>
+        <text x="590" y="190" text-anchor="middle" font-size="10" fill="#1e40af">关键词→品类→价格→...</text>
+      </g>
+
+      <!-- 方法论 3：选品方向 7 大 -->
+      <g class="node method">
+        <rect x="450" y="220" width="280" height="50" rx="8"/>
+        <text x="590" y="245" text-anchor="middle" class="title" fill="#1e3a8a">选品方向 7 大</text>
+        <text x="590" y="260" text-anchor="middle" font-size="10" fill="#1e40af">刚需/高频/低决策/...</text>
+      </g>
+
+      <!-- 方法论 4：小红书平台特点 -->
+      <g class="node method">
+        <rect x="450" y="290" width="280" height="50" rx="8"/>
+        <text x="590" y="315" text-anchor="middle" class="title" fill="#1e3a8a">小红书 6 大数据源</text>
+        <text x="590" y="330" text-anchor="middle" font-size="10" fill="#1e40af">千瓜/灰豚/蝉妈/巨量/精选/搜索</text>
+      </g>
+
+      <!-- 方法论 5：中高端路线原则 -->
+      <g class="node method">
+        <rect x="450" y="360" width="280" height="50" rx="8"/>
+        <text x="590" y="385" text-anchor="middle" class="title" fill="#1e3a8a">中高端路线原则</text>
+        <text x="590" y="400" text-anchor="middle" font-size="10" fill="#1e40af">客单价+30% / 拒绝低价</text>
+      </g>
+
+      <!-- 方法论 6：其他方法 -->
+      <g class="node method">
+        <rect x="450" y="430" width="280" height="50" rx="8"/>
+        <text x="590" y="455" text-anchor="middle" class="title" fill="#1e3a8a">其他选品方法</text>
+        <text x="590" y="470" text-anchor="middle" font-size="10" fill="#1e40af">工具流/人群流/...</text>
+      </g>
+
+      <!-- 方法论 7：飞书核心：品类区分 -->
+      <g class="node method" style="background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border: 2px solid #db2777;">
+        <rect x="450" y="500" width="280" height="60" rx="8"/>
+        <text x="590" y="525" text-anchor="middle" class="title" fill="#831843">品类区分【有颜】vs【有用】</text>
+        <text x="590" y="545" text-anchor="middle" font-size="10" fill="#9d174d">5条测试款式 vs 多条测试卖点</text>
+      </g>
+
+      <!-- 方法论 8：飞书核心：封面二阶段 -->
+      <g class="node method" style="background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border: 2px solid #db2777;">
+        <rect x="450" y="580" width="280" height="60" rx="8"/>
+        <text x="590" y="605" text-anchor="middle" class="title" fill="#831843">封面二阶段方法</text>
+        <text x="590" y="625" text-anchor="middle" font-size="10" fill="#9d174d">最热排序 2-3 张同风格 → 1:1 模仿</text>
+      </g>
+
+      <!-- 方法论 9：飞书核心：卖点重组 SOP -->
+      <g class="node method" style="background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border: 2px solid #db2777;">
+        <rect x="450" y="660" width="280" height="60" rx="8"/>
+        <text x="590" y="685" text-anchor="middle" class="title" fill="#831843">卖点重组 4 步 SOP</text>
+        <text x="590" y="705" text-anchor="middle" font-size="10" fill="#9d174d">拆卖点→找属性→换修饰→重组</text>
+      </g>
+
+      <!-- 方法论 10：极致安全 4 层级 -->
+      <g class="node method">
+        <rect x="450" y="740" width="280" height="60" rx="8"/>
+        <text x="590" y="765" text-anchor="middle" class="title" fill="#1e3a8a">极致安全 4 层级</text>
+        <text x="590" y="785" text-anchor="middle" font-size="10" fill="#1e40af">账号/IP/数据/降级</text>
+      </g>
+
+      <!-- 方法论 11：黑五类边界 -->
+      <g class="node method">
+        <rect x="450" y="820" width="280" height="50" rx="8"/>
+        <text x="590" y="845" text-anchor="middle" class="title" fill="#1e3a8a">黑五类边界</text>
+        <text x="590" y="860" text-anchor="middle" font-size="10" fill="#1e40af">不推广/不提供货源/不引导引流</text>
+      </g>
+
+      <!-- 方法论 12：多模态分析 -->
+      <g class="node method" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border: 2px solid #10b981;">
+        <rect x="450" y="890" width="280" height="60" rx="8"/>
+        <text x="590" y="915" text-anchor="middle" class="title" fill="#064e3b">多模态分析（AI 看封面/视频）</text>
+        <text x="590" y="935" text-anchor="middle" font-size="10" fill="#065f46">GLM-4V 首选 / DeepSeek-VL2 备选</text>
+      </g>
+
+      <!-- ==================== 右侧：v3.1 must_pass ==================== -->
+      <text x="900" y="40" class="text-xl font-bold" fill="#44403c">【第 3 层】v3.1 must_pass（16 条）</text>
+
+      <!-- M1 小红书选品 -->
+      <g class="node mustpass">
+        <rect x="900" y="80" width="280" height="50" rx="8"/>
+        <text x="1040" y="105" text-anchor="middle" class="title" fill="#831843">M1 小红书选品</text>
+        <text x="1040" y="120" text-anchor="middle" font-size="10" fill="#9d174d">关键词 + 9 大品类</text>
+      </g>
+
+      <!-- M2 货源反查 -->
+      <g class="node mustpass">
+        <rect x="900" y="150" width="280" height="50" rx="8"/>
+        <text x="1040" y="175" text-anchor="middle" class="title" fill="#831843">M2 货源反查</text>
+        <text x="1040" y="190" text-anchor="middle" font-size="10" fill="#9d174d">1688 / 拼多多 / 淘宝</text>
+      </g>
+
+      <!-- M3 AI 货源算法 -->
+      <g class="node mustpass">
+        <rect x="900" y="220" width="280" height="50" rx="8"/>
+        <text x="1040" y="245" text-anchor="middle" class="title" fill="#831843">M3 AI 货源算法</text>
+        <text x="1040" y="260" text-anchor="middle" font-size="10" fill="#9d174d">方法论匹配 + 利润 + 可信度</text>
+      </g>
+
+      <!-- M4 极致安全 -->
+      <g class="node mustpass">
+        <rect x="900" y="290" width="280" height="50" rx="8"/>
+        <text x="1040" y="315" text-anchor="middle" class="title" fill="#831843">M4 极致安全 4 层级</text>
+        <text x="1040" y="330" text-anchor="middle" font-size="10" fill="#9d174d">账号/IP/数据/降级</text>
+      </g>
+
+      <!-- M5 数据准确性 -->
+      <g class="node mustpass">
+        <rect x="900" y="360" width="280" height="50" rx="8"/>
+        <text x="1040" y="385" text-anchor="middle" class="title" fill="#831843">M5 数据准确性可验证</text>
+        <text x="1040" y="400" text-anchor="middle" font-size="10" fill="#9d174d">数据源标注</text>
+      </g>
+
+      <!-- M6 货源商业可信度 -->
+      <g class="node mustpass">
+        <rect x="900" y="430" width="280" height="50" rx="8"/>
+        <text x="1040" y="455" text-anchor="middle" class="title" fill="#831843">M6 货源商业可信度</text>
+        <text x="1040" y="470" text-anchor="middle" font-size="10" fill="#9d174d">双轨评分（销量+评价+AI 风险）</text>
+      </g>
+
+      <!-- M7 黑五类 -->
+      <g class="node mustpass">
+        <rect x="900" y="500" width="280" height="50" rx="8"/>
+        <text x="1040" y="525" text-anchor="middle" class="title" fill="#831843">M7 黑五类只警告不推广</text>
+        <text x="1040" y="540" text-anchor="middle" font-size="10" fill="#9d174d">不推广/不提供货源/不引导引流</text>
+      </g>
+
+      <!-- M8 小红书单平台极致 -->
+      <g class="node mustpass">
+        <rect x="900" y="570" width="280" height="50" rx="8"/>
+        <text x="1040" y="595" text-anchor="middle" class="title" fill="#831843">M8 小红书单平台极致</text>
+        <text x="1040" y="610" text-anchor="middle" font-size="10" fill="#9d174d">砍抖音/快手/视频号</text>
+      </g>
+
+      <!-- M9 本地存储 -->
+      <g class="node mustpass">
+        <rect x="900" y="640" width="280" height="50" rx="8"/>
+        <text x="1040" y="665" text-anchor="middle" class="title" fill="#831843">M9 本地存储不联网</text>
+        <text x="1040" y="680" text-anchor="middle" font-size="10" fill="#9d174d">SQLite 加密</text>
+      </g>
+
+      <!-- M10 数据不被污染 -->
+      <g class="node mustpass">
+        <rect x="900" y="710" width="280" height="50" rx="8"/>
+        <text x="1040" y="735" text-anchor="middle" class="title" fill="#831843">M10 数据不被污染</text>
+        <text x="1040" y="750" text-anchor="middle" font-size="10" fill="#9d174d">假数据过滤 + 24h 突然爆 10x 标记</text>
+      </g>
+
+      <!-- M11 选品漏斗池 -->
+      <g class="node mustpass">
+        <rect x="900" y="780" width="280" height="50" rx="8"/>
+        <text x="1040" y="805" text-anchor="middle" class="title" fill="#831843">M11 选品漏斗池（X8）</text>
+        <text x="1040" y="820" text-anchor="middle" font-size="10" fill="#9d174d">8 层漏斗</text>
+      </g>
+
+      <!-- M12 选品方向 7 大 -->
+      <g class="node mustpass">
+        <rect x="900" y="850" width="280" height="50" rx="8"/>
+        <text x="1040" y="875" text-anchor="middle" class="title" fill="#831843">M12 选品方向 7 大（X9）</text>
+        <text x="1040" y="890" text-anchor="middle" font-size="10" fill="#9d174d">刚需/高频/低决策...</text>
+      </g>
+
+      <!-- M13 v2 测品 -->
+      <g class="node mustpass" style="background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border: 2px solid #db2777;">
+        <rect x="900" y="920" width="280" height="80" rx="8"/>
+        <text x="1040" y="945" text-anchor="middle" class="title" fill="#831843">M13 v2 测品功能（飞书升级）</text>
+        <text x="1040" y="965" text-anchor="middle" font-size="10" fill="#9d174d">①品类区分</text>
+        <text x="1040" y="980" text-anchor="middle" font-size="10" fill="#9d174d">②封面二阶段</text>
+        <text x="1040" y="995" text-anchor="middle" font-size="10" fill="#9d174d">③卖点重组 4 步 SOP</text>
+      </g>
+
+      <!-- M14 中高端 -->
+      <g class="node mustpass">
+        <rect x="900" y="1020" width="280" height="50" rx="8"/>
+        <text x="1040" y="1045" text-anchor="middle" class="title" fill="#831843">M14 中高端路线（X11）</text>
+        <text x="1040" y="1060" text-anchor="middle" font-size="10" fill="#9d174d">客单价+30% / 拒绝低价走量</text>
+      </g>
+
+      <!-- M15 第三方数据工具 -->
+      <g class="node mustpass">
+        <rect x="900" y="1090" width="280" height="70" rx="8"/>
+        <text x="1040" y="1115" text-anchor="middle" class="title" fill="#831843">M15 第三方数据工具（5+1）</text>
+        <text x="1040" y="1135" text-anchor="middle" font-size="10" fill="#9d174d">千瓜/灰豚/蝉妈/巨量/小红书APP</text>
+        <text x="1040" y="1150" text-anchor="middle" font-size="10" fill="#9d174d">+抖音精选联盟（可选）</text>
+      </g>
+
+      <!-- M16 多模态 -->
+      <g class="node mustpass" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border: 2px solid #10b981;">
+        <rect x="900" y="1180" width="280" height="60" rx="8"/>
+        <text x="1040" y="1205" text-anchor="middle" class="title" fill="#064e3b">M16 多模态分析</text>
+        <text x="1040" y="1225" text-anchor="middle" font-size="10" fill="#065f46">GLM-4V 首选 / DeepSeek-VL2 备选</text>
+      </g>
+
+      <!-- ==================== 连线 ==================== -->
+      <!-- 原始材料 → 方法论 -->
+      <path d="M 330 105 L 450 105" class="arrow" marker-end="url(#arrowhead)"/>
+      <path d="M 330 175 L 450 175" class="arrow" marker-end="url(#arrowhead)"/>
+      <path d="M 330 245 L 450 245" class="arrow" marker-end="url(#arrowhead)"/>
+      <path d="M 330 105 L 450 315" class="arrow" marker-end="url(#arrowhead)"/>
+      <path d="M 330 175 L 450 385" class="arrow" marker-end="url(#arrowhead)"/>
+      <path d="M 330 175 L 450 845" class="arrow" marker-end="url(#arrowhead)"/>
+      <path d="M 330 245 L 450 455" class="arrow" marker-end="url(#arrowhead)"/>
+      <path d="M 330 480 L 450 530" class="arrow" marker-end="url(#arrowhead)"/>
+      <path d="M 330 480 L 450 610" class="arrow" marker-end="url(#arrowhead)"/>
+      <path d="M 330 480 L 450 690" class="arrow" marker-end="url(#arrowhead)"/>
+      <path d="M 330 175 L 450 920" class="arrow" marker-end="url(#arrowhead)"/>
+      <path d="M 330 480 L 450 920" class="arrow" marker-end="url(#arrowhead)"/>
+
+      <!-- 方法论 → must_pass（粉红色加粗） -->
+      <path d="M 730 105 L 900 105" class="arrow-thick" marker-end="url(#arrowhead-pink)"/>
+      <path d="M 730 105 L 900 175" class="arrow-thick" marker-end="url(#arrowhead-pink)"/>
+      <path d="M 730 105 L 900 245" class="arrow-thick" marker-end="url(#arrowhead-pink)"/>
+      <path d="M 730 105 L 900 455" class="arrow-thick" marker-end="url(#arrowhead-pink)"/>
+
+      <path d="M 730 175 L 900 805" class="arrow-thick" marker-end="url(#arrowhead-pink)"/>
+
+      <path d="M 730 245 L 900 875" class="arrow-thick" marker-end="url(#arrowhead-pink)"/>
+
+      <path d="M 730 315 L 900 315" class="arrow-thick" marker-end="url(#arrowhead-pink)"/>
+
+      <path d="M 730 385 L 900 1045" class="arrow-thick" marker-end="url(#arrowhead-pink)"/>
+
+      <path d="M 730 455 L 900 245" class="arrow-thick" marker-end="url(#arrowhead-pink)"/>
+
+      <path d="M 730 530 L 900 945" class="arrow-thick" marker-end="url(#arrowhead-pink)"/>
+      <path d="M 730 530 L 900 595" class="arrow-thick" marker-end="url(#arrowhead-pink)"/>
+
+      <path d="M 730 610 L 900 945" class="arrow-thick" marker-end="url(#arrowhead-pink)"/>
+
+      <path d="M 730 690 L 900 945" class="arrow-thick" marker-end="url(#arrowhead-pink)"/>
+
+      <path d="M 730 770 L 900 315" class="arrow-thick" marker-end="url(#arrowhead-pink)"/>
+
+      <path d="M 730 845 L 900 525" class="arrow-thick" marker-end="url(#arrowhead-pink)"/>
+
+      <path d="M 730 920 L 900 1115" class="arrow-thick" marker-end="url(#arrowhead-pink)"/>
+      <path d="M 730 920 L 900 945" class="arrow-thick" marker-end="url(#arrowhead-pink)"/>
+      <path d="M 730 920 L 900 1205" class="arrow-thick" marker-end="url(#arrowhead-pink)"/>
+
+      <!-- ==================== 统计框 ==================== -->
+      <g transform="translate(1300, 80)">
+        <rect x="0" y="0" width="450" height="280" rx="8" fill="#fff" stroke="#e7e5e4" stroke-width="2"/>
+        <text x="225" y="30" text-anchor="middle" font-weight="700" fill="#44403c">引用统计</text>
+
+        <text x="20" y="70" font-size="13" fill="#44403c">【原始材料 12 份】</text>
+        <text x="40" y="95" font-size="12" fill="#78716c">✓ 11 篇选品手册（已读 3 篇·核心 3 篇）</text>
+        <text x="40" y="115" font-size="12" fill="#78716c">✓ 1 篇飞书文章（已读·M13 v2 注入）</text>
+
+        <text x="20" y="150" font-size="13" fill="#44403c">【方法论节点 12 个】</text>
+        <text x="40" y="175" font-size="12" fill="#78716c">✓ 通用公式 / 漏斗池 / 7 大方向</text>
+        <text x="40" y="195" font-size="12" fill="#78716c">✓ 小红书 6 大数据源 / 中高端原则</text>
+        <text x="40" y="215" font-size="12" fill="#db2777">✓ 飞书 3 大核心（品类/封面/卖点）</text>
+        <text x="40" y="235" font-size="12" fill="#78716c">✓ 极致安全 4 层级 / 黑五类边界</text>
+        <text x="40" y="255" font-size="12" fill="#10b981">✓ 多模态分析（GLM-4V）</text>
+
+        <text x="20" y="280" font-size="13" fill="#44403c" font-weight="600">【v3.1 must_pass 16 条 · 100% 覆盖】</text>
+      </g>
+
+      <!-- 决策路径标注 -->
+      <g transform="translate(1300, 400)">
+        <rect x="0" y="0" width="450" height="220" rx="8" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+        <text x="225" y="30" text-anchor="middle" font-weight="700" fill="#831843">关键决策（那哥 6/9 决策）</text>
+
+        <text x="20" y="65" font-size="12" fill="#831843" font-weight="600">1. M15 第三方工具 = 5+1</text>
+        <text x="40" y="85" font-size="11" fill="#9d174d">5 个主工具 + 1 个可选（抖音精选）</text>
+
+        <text x="20" y="115" font-size="12" fill="#831843" font-weight="600">2. 登录方式 = Tauri 内置 webview</text>
+        <text x="40" y="135" font-size="11" fill="#9d174d">用户自行登录，工具不参与账号获取</text>
+
+        <text x="20" y="165" font-size="12" fill="#831843" font-weight="600">3. 合规边界</text>
+        <text x="40" y="185" font-size="11" fill="#9d174d">工具不参与账号倒卖/共享/付费购买</text>
+        <text x="40" y="200" font-size="11" fill="#9d174d">用户对自己账号合法性负责</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- 文字版说明 -->
+  <div class="mt-6 bg-white rounded-lg shadow p-6">
+    <h2 class="text-xl font-bold text-stone-800 mb-3">三张图的关系</h2>
+    <ul class="space-y-2 text-sm text-stone-700">
+      <li><strong>A 图（流程图·全局技术视角）</strong>：解决"v3.1 怎么跑起来"——7 阶段从关键词输入到 AI 报告</li>
+      <li><strong>B 图（流程图·卖家视角）</strong>：解决"卖家怎么用"——5 步从找品到出货</li>
+      <li><strong>C 图（本图·方法论引用关系图）</strong>：解决"v3.1 为什么这么设计"——12 份原始材料 → 12 个方法论节点 → 16 条 must_pass</li>
+    </ul>
+
+    <h2 class="text-xl font-bold text-stone-800 mt-6 mb-3">引用统计</h2>
+    <p class="text-sm text-stone-700">12 份原始材料 → 12 个方法论节点 → 16 条 must_pass（100% 覆盖）。</p>
+    <p class="text-sm text-stone-700 mt-2">其中 <strong>3 个飞书核心方法论</strong>（品类区分/封面二阶段/卖点重组 SOP）已并入 M13 v2，<strong>1 个多模态方法论</strong>独立为 M16。</p>
+    <p class="text-sm text-stone-700 mt-2">8 篇未读手册（01/03/05-10）暂不纳入 v3.1——v3.1 收敛为小红书单平台，其他平台手册留作未来 v4+ 参考。</p>
+  </div>
+</div>
+</body>
+</html>

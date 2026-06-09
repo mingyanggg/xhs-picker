@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>方法论引用关系图 · C 图 · 11 篇手册 + 飞书文章 → v3.1 must_pass</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
+<style>
+body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #faf8f4; }
+.container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+.title { font-size: 24px; font-weight: 700; color: #4a3520; margin-bottom: 8px; }
+.subtitle { font-size: 14px; color: #8b6f47; margin-bottom: 20px; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; padding: 12px; background: white; border-radius: 8px; border: 1px solid #e8d9c0; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.legend-dot { width: 14px; height: 14px; border-radius: 50%; }
+#network { width: 100%; height: 700px; background: white; border-radius: 8px; border: 1px solid #e8d9c0; }
+.summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 20px; }
+.summary-card { background: white; border-radius: 8px; padding: 16px; border: 1px solid #e8d9c0; }
+.summary-title { font-size: 12px; color: #8b6f47; margin-bottom: 4px; }
+.summary-num { font-size: 24px; font-weight: 700; color: #4a3520; }
+.summary-desc { font-size: 12px; color: #8b6f47; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="title">方法论引用关系图（C 图）</div>
+<div class="subtitle">11 篇选品手册 + 1 篇飞书文章 → 17 条 v3.1 must_pass · 那哥 6/9 顶层设计产物</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#d97706"></div>手册章节（13 个源）</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#059669"></div>飞书文章（1 个源）</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div>必须实现（M1-M17）</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#dc2626"></div>决策溯源（6/9 决策）</div>
+</div>
+
+<div id="network"></div>
+
+<div class="summary">
+  <div class="summary-card">
+    <div class="summary-title">手册章节引用</div>
+    <div class="summary-num">13</div>
+    <div class="summary-desc">11 篇手册拆解出的方法论节点</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-title">飞书文章引用</div>
+    <div class="summary-num">5</div>
+    <div class="summary-desc">拆解出的方法论节点（爆款公式+封面二阶段+视频剪辑+卖点重组+品类判断）</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-title">必实现 must_pass</div>
+    <div class="summary-num">17</div>
+    <div class="summary-desc">v3.1 + M17（渐进式登录）</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-title">决策溯源点</div>
+    <div class="summary-num">6</div>
+    <div class="summary-desc">6/9 那哥拍板 + 3 次反对意见</div>
+  </div>
+</div>
+
+<div style="margin-top:24px; padding:16px; background:white; border-radius:8px; border:1px solid #e8d9c0; font-size:13px; line-height:1.8; color:#4a3520;">
+<strong>图例说明</strong>：<br>
+• 橙色节点 = 11 篇手册拆解的方法论（按手册编号 X1-X11 + 索引 INDEX + 写在前面 00）<br>
+• 绿色节点 = 1 篇飞书文章拆解的方法论（小刀轻创 12 天 23.6 万）<br>
+• 蓝色节点 = 17 条 must_pass 必须实现的（M1-M17）<br>
+• 红色节点 = 6/9 那哥关键决策（带反对意见溯源）<br>
+• 箭头方向 = "从方法论引用到必须实现"<br>
+• 边的粗细 = 引用强度（粗=核心方法论，细=辅助方法论）<br>
+</div>
+</div>
+
+<script>
+const nodes = [
+  // ===== 手册章节（橙色）=====
+  { id: 'INDEX', label: 'INDEX\n选品手册索引', color: '#d97706', shape: 'box', font: { size: 13, color: '#4a3520' } },
+  { id: 'X0', label: '00-写在前面\n方法论总论', color: '#d97706', shape: 'box', font: { size: 13, color: '#4a3520' } },
+  { id: 'X2', label: 'X2 通用底层逻辑\n六步选品法', color: '#d97706', shape: 'box', font: { size: 13, color: '#4a3520' } },
+  { id: 'X3', label: 'X3 第三方数据\n千瓜/灰豚/蝉妈妈', color: '#d97706', shape: 'box', font: { size: 13, color: '#4a3520' } },
+  { id: 'X4', label: 'X4 灰豚商品榜\n小红书商家评分', color: '#d97706', shape: 'box', font: { size: 13, color: '#4a3520' } },
+  { id: 'X5', label: 'X5 蝉妈妈视频榜\n跨平台选品', color: '#d97706', shape: 'box', font: { size: 13, color: '#4a3520' } },
+  { id: 'X7', label: 'X7 传统电商验证\n淘宝/京东交叉', color: '#d97706', shape: 'box', font: { size: 13, color: '#4a3520' } },
+  { id: 'X8', label: 'X8 选品漏斗池\n分层运营', color: '#d97706', shape: 'box', font: { size: 13, color: '#4a3520' } },
+  { id: 'X9', label: 'X9 选品方向\n7 大方向', color: '#d97706', shape: 'box', font: { size: 13, color: '#4a3520' } },
+  { id: 'X11', label: 'X11 中高端原则\n70%选品+30%封面', color: '#d97706', shape: 'box', font: { size: 13, color: '#4a3520' } },
+  { id: 'G4', label: 'G4 痛点 vs 痒点\n判定逻辑', color: '#d97706', shape: 'box', font: { size: 13, color: '#4a3520' } },
+  { id: 'G5', label: 'G5 爆品截流\n跟品方法', color: '#d97706', shape: 'box', font: { size: 13, color: '#4a3520' } },
+  { id: 'B5', label: 'B5 黑五类\n拦截+不推广', color: '#d97706', shape: 'box', font: { size: 13, color: '#4a3520' } },
+
+  // ===== 飞书文章（绿色）=====
+  { id: 'FS1', label: '飞书·爆款公式\n70%选品+30%封面+视频', color: '#059669', shape: 'ellipse', font: { size: 13, color: '#064e3b' } },
+  { id: 'FS2', label: '飞书·封面二阶段\n最热排序→1:1复用', color: '#059669', shape: 'ellipse', font: { size: 13, color: '#064e3b' } },
+  { id: 'FS3', label: '飞书·视频剪辑\n3秒换素材', color: '#059669', shape: 'ellipse', font: { size: 13, color: '#064e3b' } },
+  { id: 'FS4', label: '飞书·卖点重组4步\n拆→找→替→组', color: '#059669', shape: 'ellipse', font: { size: 13, color: '#064e3b' } },
+  { id: 'FS5', label: '飞书·品类判断\n【有颜】vs【有用】', color: '#059669', shape: 'ellipse', font: { size: 13, color: '#064e3b' } },
+
+  // ===== 必实现 must_pass（蓝色）=====
+  { id: 'M1', label: 'M1\n小红书选品可用', color: '#2563eb', shape: 'circle', font: { size: 14, color: 'white', bold: true } },
+  { id: 'M2', label: 'M2\n货源反查+跟品', color: '#2563eb', shape: 'circle', font: { size: 14, color: 'white', bold: true } },
+  { id: 'M3', label: 'M3\n双轨评分', color: '#2563eb', shape: 'circle', font: { size: 14, color: 'white', bold: true } },
+  { id: 'M4', label: 'M4\n极致安全4层级', color: '#2563eb', shape: 'circle', font: { size: 14, color: 'white', bold: true } },
+  { id: 'M5', label: 'M5\n数据准确性\n+交叉验证', color: '#2563eb', shape: 'circle', font: { size: 13, color: 'white', bold: true } },
+  { id: 'M6', label: 'M6\n商家可信度评分', color: '#2563eb', shape: 'circle', font: { size: 14, color: 'white', bold: true } },
+  { id: 'M7', label: 'M7\n黑五类拦截', color: '#2563eb', shape: 'circle', font: { size: 14, color: 'white', bold: true } },
+  { id: 'M8', label: 'M8\n品类体系9大', color: '#2563eb', shape: 'circle', font: { size: 14, color: 'white', bold: true } },
+  { id: 'M9', label: 'M9\n跟踪模块', color: '#2563eb', shape: 'circle', font: { size: 14, color: 'white', bold: true } },
+  { id: 'M10', label: 'M10\n假数据检测', color: '#2563eb', shape: 'circle', font: { size: 14, color: 'white', bold: true } },
+  { id: 'M11', label: 'M11\n选品漏斗池', color: '#2563eb', shape: 'circle', font: { size: 14, color: 'white', bold: true } },
+  { id: 'M12', label: 'M12\n选品方向7大', color: '#2563eb', shape: 'circle', font: { size: 14, color: 'white', bold: true } },
+  { id: 'M13', label: 'M13 测品v2\n品类+封面+卖点', color: '#2563eb', shape: 'circle', font: { size: 14, color: 'white', bold: true } },
+  { id: 'M14', label: 'M14\n中高端原则', color: '#2563eb', shape: 'circle', font: { size: 14, color: 'white', bold: true } },
+  { id: 'M15', label: 'M15 第三方工具\n5+1集成', color: '#2563eb', shape: 'circle', font: { size: 14, color: 'white', bold: true } },
+  { id: 'M16', label: 'M16\n多模态分析', color: '#2563eb', shape: 'circle', font: { size: 14, color: 'white', bold: true } },
+  { id: 'M17', label: 'M17 渐进式登录\n首次启动引导', color: '#2563eb', shape: 'circle', font: { size: 14, color: 'white', bold: true } },
+
+  // ===== 决策溯源（红色）=====
+  { id: 'D1', label: '6/9 决策\nv3 → v3.1', color: '#dc2626', shape: 'diamond', font: { size: 12, color: 'white', bold: true } },
+  { id: 'D2', label: '6/9 决策\nCDP 9223\n非系统Chrome', color: '#dc2626', shape: 'diamond', font: { size: 11, color: 'white', bold: true } },
+  { id: 'D3', label: '6/9 决策\nM15 闲鱼方案\n(反对3次)', color: '#dc2626', shape: 'diamond', font: { size: 11, color: 'white', bold: true } },
+  { id: 'D4', label: '6/9 决策\nM17 渐进式\n强制1个', color: '#dc2626', shape: 'diamond', font: { size: 11, color: 'white', bold: true } },
+  { id: 'D5', label: '6/9 决策\n多模态选型\nGLM-4V', color: '#dc2626', shape: 'diamond', font: { size: 11, color: 'white', bold: true } },
+  { id: 'D6', label: '6/9 决策\nM13 飞书注入\n3大核心', color: '#dc2626', shape: 'diamond', font: { size: 11, color: 'white', bold: true } },
+];
+
+const edges = [
+  // INDEX → 全部
+  { from: 'INDEX', to: 'M1', arrows: 'to', color: { color: '#d97706', opacity: 0.3 } },
+
+  // 00-写在前面 → 通用
+  { from: 'X0', to: 'M1', arrows: 'to', color: { color: '#d97706' } },
+  { from: 'X0', to: 'M8', arrows: 'to', color: { color: '#d97706' } },
+
+  // X2 通用底层 → M1 + M2 + M3
+  { from: 'X2', to: 'M1', arrows: 'to', color: { color: '#d97706', width: 3 } },
+  { from: 'X2', to: 'M2', arrows: 'to', color: { color: '#d97706', width: 3 } },
+  { from: 'X2', to: 'M3', arrows: 'to', color: { color: '#d97706' } },
+
+  // X3 X4 X5 第三方 → M15
+  { from: 'X3', to: 'M15', arrows: 'to', color: { color: '#d97706', width: 3 } },
+  { from: 'X4', to: 'M15', arrows: 'to', color: { color: '#d97706', width: 3 } },
+  { from: 'X4', to: 'M6', arrows: 'to', color: { color: '#d97706' } },
+  { from: 'X5', to: 'M15', arrows: 'to', color: { color: '#d97706' } },
+  { from: 'X5', to: 'M2', arrows: 'to', color: { color: '#d97706' } },
+
+  // X7 传统电商 → M5
+  { from: 'X7', to: 'M5', arrows: 'to', color: { color: '#d97706', width: 3 } },
+
+  // X8 漏斗池 → M11
+  { from: 'X8', to: 'M11', arrows: 'to', color: { color: '#d97706', width: 3 } },
+
+  // X9 选品方向 → M12
+  { from: 'X9', to: 'M12', arrows: 'to', color: { color: '#d97706', width: 3 } },
+
+  // X11 中高端 → M14
+  { from: 'X11', to: 'M14', arrows: 'to', color: { color: '#d97706', width: 3 } },
+  { from: 'X11', to: 'M1', arrows: 'to', color: { color: '#d97706' } },
+
+  // G4 痛点 vs 痒点 → M13 + M1
+  { from: 'G4', to: 'M13', arrows: 'to', color: { color: '#d97706', width: 2 } },
+  { from: 'G4', to: 'M1', arrows: 'to', color: { color: '#d97706' } },
+
+  // G5 跟品 → M2
+  { from: 'G5', to: 'M2', arrows: 'to', color: { color: '#d97706', width: 3 } },
+
+  // B5 黑五类 → M7
+  { from: 'B5', to: 'M7', arrows: 'to', color: { color: '#d97706', width: 3 } },
+
+  // 飞书文章 → M13（核心）
+  { from: 'FS1', to: 'M13', arrows: 'to', color: { color: '#059669', width: 3 } },
+  { from: 'FS2', to: 'M13', arrows: 'to', color: { color: '#059669', width: 3 } },
+  { from: 'FS3', to: 'M13', arrows: 'to', color: { color: '#059669' } },
+  { from: 'FS4', to: 'M13', arrows: 'to', color: { color: '#059669', width: 2 } },
+  { from: 'FS5', to: 'M13', arrows: 'to', color: { color: '#059669', width: 2 } },
+
+  // 飞书爆款公式 → M14
+  { from: 'FS1', to: 'M14', arrows: 'to', color: { color: '#059669' } },
+
+  // 决策 → must_pass
+  { from: 'D1', to: 'M1', arrows: 'to', dashes: true, color: { color: '#dc2626' } },
+  { from: 'D1', to: 'M11', arrows: 'to', dashes: true, color: { color: '#dc2626' } },
+  { from: 'D1', to: 'M12', arrows: 'to', dashes: true, color: { color: '#dc2626' } },
+  { from: 'D1', to: 'M14', arrows: 'to', dashes: true, color: { color: '#dc2626' } },
+  { from: 'D1', to: 'M15', arrows: 'to', dashes: true, color: { color: '#dc2626' } },
+
+  { from: 'D2', to: 'M15', arrows: 'to', dashes: true, color: { color: '#dc2626' } },
+  { from: 'D3', to: 'M15', arrows: 'to', dashes: true, color: { color: '#dc2626', width: 3 } },
+  { from: 'D4', to: 'M17', arrows: 'to', dashes: true, color: { color: '#dc2626', width: 3 } },
+  { from: 'D5', to: 'M16', arrows: 'to', dashes: true, color: { color: '#dc2626', width: 3 } },
+  { from: 'D6', to: 'M13', arrows: 'to', dashes: true, color: { color: '#dc2626', width: 3 } },
+
+  // M17 关联
+  { from: 'M15', to: 'M17', arrows: 'to', color: { color: '#2563eb', width: 2 } },
+];
+
+const container = document.getElementById('network');
+const data = { nodes: new vis.DataSet(nodes), edges: new vis.DataSet(edges) };
+const options = {
+  layout: { hierarchical: { enabled: true, direction: 'LR', sortMethod: 'directed', levelSeparation: 250, nodeSpacing: 150 } },
+  physics: { enabled: false },
+  interaction: { hover: true, tooltipDelay: 200 },
+  nodes: { borderWidth: 2, shadow: true },
+  edges: { width: 1.5, smooth: { type: 'cubicBezier' } }
+};
+const network = new vis.Network(container, data, options);
+</script>
+</body>
+</html>

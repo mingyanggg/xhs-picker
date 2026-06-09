@@ -31,12 +31,9 @@ import BlacklistAlert from '@/components/BlacklistAlert';
 import ReportCard from '@/components/ReportCard';
 import BrowserPanel from '@/components/BrowserPanel';
 
-// 平台选项
+// 平台选项（v3 只保留小红书）
 const PLATFORM_OPTIONS: { id: PlatformId; name: string }[] = [
   { id: 'xhs', name: '小红书' },
-  { id: 'kuaishou', name: '快手' },
-  { id: 'douyin', name: '抖音' },
-  { id: 'shipinhao', name: '视频号' },
 ];
 
 // ============== 类型 ==============
@@ -74,9 +71,12 @@ function convertToContentItem(note: PageData['notes'][0]): ContentItem {
     },
     account: {
       id: '',
+      name: note.author,
       nickname: note.author,
       avatar: '',
       followers: 0,
+      contentCount: 0,
+      avgEngagement: 0,
     },
     isLowFollowerViral: false,
   };

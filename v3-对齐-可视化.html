@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>选品工具 v3 · 11篇手册对齐矩阵</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #F5F1E8 0%, #EDE5D3 100%);
+    color: #2A1F14;
+    padding: 32px 24px;
+    min-height: 100vh;
+  }
+  .container { max-width: 1400px; margin: 0 auto; }
+  h1 {
+    font-size: 32px;
+    color: #2A1F14;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  .subtitle {
+    color: #6B5D4F;
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .summary-card {
+    background: #FFFFFF;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border-left: 4px solid #D88C5A;
+  }
+  .summary-num {
+    font-size: 32px;
+    font-weight: 700;
+    color: #D88C5A;
+    line-height: 1;
+  }
+  .summary-label {
+    font-size: 13px;
+    color: #6B5D4F;
+    margin-top: 8px;
+  }
+  .summary-card.urgent { border-left-color: #C84B31; }
+  .summary-card.urgent .summary-num { color: #C84B31; }
+  .summary-card.warn { border-left-color: #B89968; }
+  .summary-card.warn .summary-num { color: #B89968; }
+  .summary-card.ok { border-left-color: #5C8A5C; }
+  .summary-card.ok .summary-num { color: #5C8A5C; }
+
+  .section {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .section-title {
+    font-size: 20px;
+    color: #2A1F14;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #F5F1E8;
+    font-weight: 600;
+  }
+  .section-title .num {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+    text-align: center;
+    background: #D88C5A;
+    color: white;
+    border-radius: 8px;
+    margin-right: 12px;
+    font-size: 16px;
+  }
+
+  .method-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .method {
+    border: 1px solid #EDE5D3;
+    border-radius: 10px;
+    padding: 14px;
+    background: #FAF7F0;
+    transition: transform 0.2s;
+  }
+  .method:hover { transform: translateY(-2px); }
+  .method-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .method-id {
+    font-family: monospace;
+    background: #2A1F14;
+    color: #F5F1E8;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .method-name {
+    font-weight: 600;
+    color: #2A1F14;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  .method-source {
+    font-size: 11px;
+    color: #6B5D4F;
+    margin-bottom: 8px;
+  }
+  .status-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .status-tag.ok { background: #DCEAD8; color: #2D5016; }
+  .status-tag.partial { background: #FFE5C0; color: #8B5A1A; }
+  .status-tag.miss { background: #F4D5D0; color: #8B1A0F; }
+  .status-tag.skip { background: #E8E5DE; color: #6B5D4F; }
+
+  .importance {
+    display: inline-block;
+    margin-left: 4px;
+    font-size: 12px;
+  }
+
+  .alignment-flow {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+  }
+  .flow-box {
+    flex: 1;
+    min-width: 200px;
+    background: #FAF7F0;
+    border: 1px solid #EDE5D3;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .flow-arrow {
+    font-size: 24px;
+    color: #D88C5A;
+    font-weight: 700;
+  }
+  .flow-box h4 {
+    font-size: 13px;
+    color: #6B5D4F;
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+  .flow-box p {
+    font-size: 16px;
+    color: #2A1F14;
+    font-weight: 600;
+  }
+
+  .miss-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .miss-item {
+    background: #FFF5F2;
+    border-left: 4px solid #C84B31;
+    padding: 14px;
+    border-radius: 8px;
+  }
+  .miss-id {
+    font-family: monospace;
+    color: #C84B31;
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+  .miss-title {
+    font-weight: 600;
+    color: #2A1F14;
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+  .miss-desc {
+    font-size: 12px;
+    color: #6B5D4F;
+    line-height: 1.5;
+  }
+
+  .new-must {
+    background: #F0F8E8;
+    border-left: 4px solid #5C8A5C;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+  .new-must-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .new-must-id {
+    font-family: monospace;
+    color: #2D5016;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .new-must-time {
+    background: #5C8A5C;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+  }
+  .new-must-name {
+    font-weight: 600;
+    color: #2A1F14;
+    margin-bottom: 4px;
+  }
+  .new-must-desc {
+    font-size: 12px;
+    color: #2A1F14;
+    line-height: 1.5;
+  }
+
+  .estimate {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .estimate-box {
+    background: #FAF7F0;
+    border-radius: 10px;
+    padding: 16px;
+    border: 1px solid #EDE5D3;
+  }
+  .estimate-box h5 {
+    font-size: 13px;
+    color: #6B5D4F;
+    margin-bottom: 8px;
+  }
+  .estimate-box .big {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2A1F14;
+  }
+  .estimate-box.warn { background: #FFF5F2; border-color: #C84B31; }
+  .estimate-box.warn .big { color: #C84B31; }
+
+  .decision {
+    background: #2A1F14;
+    color: #F5F1E8;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+  }
+  .decision h3 { color: #D88C5A; margin-bottom: 12px; font-size: 18px; }
+  .decision ul { list-style: none; padding: 0; }
+  .decision li { margin-bottom: 8px; font-size: 14px; }
+  .decision li::before { content: "→ "; color: #D88C5A; font-weight: 700; }
+
+  .legend {
+    display: flex;
+    gap: 16px;
+    margin: 16px 0;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: #6B5D4F;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+
+  footer {
+    text-align: center;
+    margin-top: 32px;
+    color: #6B5D4F;
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>选品工具 v3 ↔ 11 篇手册对齐</h1>
+  <p class="subtitle">2026-06-09 · 那哥 + 小米 · Obsidian 资料对齐</p>
+
+  <!-- 概览卡片 -->
+  <div class="summary">
+    <div class="summary-card urgent">
+      <div class="summary-num">11</div>
+      <div class="summary-label">疏漏点<br>（必须修正）</div>
+    </div>
+    <div class="summary-card warn">
+      <div class="summary-num">15</div>
+      <div class="summary-label">对齐后 must_pass<br>（10+5 新增）</div>
+    </div>
+    <div class="summary-card warn">
+      <div class="summary-num">+25%</div>
+      <div class="summary-label">工时增加<br>（60-80h → 80-100h）</div>
+    </div>
+    <div class="summary-card ok">
+      <div class="summary-num">5 周</div>
+      <div class="summary-label">新工期<br>（20-25 工作日）</div>
+    </div>
+  </div>
+
+  <!-- 流程图 -->
+  <div class="section">
+    <div class="section-title"><span class="num">0</span>对齐流程</div>
+    <div class="alignment-flow">
+      <div class="flow-box">
+        <h4>来源</h4>
+        <p>11 篇选品手册<br>（Obsidian）</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">
+        <h4>中间层</h4>
+        <p>v3 GOAL<br>10 条 must_pass</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">
+        <h4>输出</h4>
+        <p>v3.1 GOAL<br>15 条 must_pass</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 第一组：通用方法论 -->
+  <div class="section">
+    <div class="section-title"><span class="num">1</span>通用方法论（v3 必保留）</div>
+    <div class="legend">
+      <div class="legend-item"><span class="status-tag ok">已含</span> v3 已包含</div>
+      <div class="legend-item"><span class="status-tag miss">遗漏</span> 必须补</div>
+      <div class="legend-item"><span class="status-tag partial">部分</span> 部分覆盖</div>
+    </div>
+    <div class="method-grid">
+      <div class="method">
+        <div class="method-head"><span class="method-id">G1</span><span class="importance">⭐⭐⭐</span></div>
+        <div class="method-name">蓝海三部曲</div>
+        <div class="method-source">02-通用底层逻辑</div>
+        <span class="status-tag ok">已含 M2</span>
+      </div>
+      <div class="method">
+        <div class="method-head"><span class="method-id">G2</span><span class="importance">⭐⭐⭐</span></div>
+        <div class="method-name">六步选品法</div>
+        <div class="method-source">02-通用底层逻辑</div>
+        <span class="status-tag partial">部分 · M1 候选</span>
+      </div>
+      <div class="method">
+        <div class="method-head"><span class="method-id">G3</span><span class="importance">⭐⭐⭐</span></div>
+        <div class="method-name">三大核心原则</div>
+        <div class="method-source">01-基础概述</div>
+        <span class="status-tag miss">遗漏</span>
+      </div>
+      <div class="method">
+        <div class="method-head"><span class="method-id">G4</span><span class="importance">⭐⭐</span></div>
+        <div class="method-name">痛点 vs 痒点</div>
+        <div class="method-source">02-通用底层逻辑</div>
+        <span class="status-tag miss">遗漏</span>
+      </div>
+      <div class="method">
+        <div class="method-head"><span class="method-id">G5</span><span class="importance">⭐⭐</span></div>
+        <div class="method-name">跟品方法</div>
+        <div class="method-source">02-通用底层逻辑</div>
+        <span class="status-tag miss">遗漏</span>
+      </div>
+      <div class="method">
+        <div class="method-head"><span class="method-id">G6</span><span class="importance">⭐</span></div>
+        <div class="method-name">周期性选品</div>
+        <div class="method-source">02-通用底层逻辑</div>
+        <span class="status-tag miss">遗漏</span>
+      </div>
+      <div class="method">
+        <div class="method-head"><span class="method-id">G7</span><span class="importance">⭐⭐</span></div>
+        <div class="method-name">用户需求选品</div>
+        <div class="method-source">02-通用底层逻辑</div>
+        <span class="status-tag miss">遗漏</span>
+      </div>
+      <div class="method">
+        <div class="method-head"><span class="method-id">G8</span><span class="importance">⭐</span></div>
+        <div class="method-name">趋势选品</div>
+        <div class="method-source">02-通用底层逻辑</div>
+        <span class="status-tag miss">遗漏</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 第二组：小红书专用 -->
+  <div class="section">
+    <div class="section-title"><span class="num">2</span>小红书专用（v3 主战场）</div>
+    <div class="method-grid">
+      <div class="method">
+        <div class="method-head"><span class="method-id">X1</span><span class="importance">⭐⭐⭐</span></div>
+        <div class="method-name">蓝海选品（比值法）</div>
+        <div class="method-source">04-小红书</div>
+        <span class="status-tag partial">部分 · M2</span>
+      </div>
+      <div class="method">
+        <div class="method-head"><span class="method-id">X2</span><span class="importance">⭐⭐⭐</span></div>
+        <div class="method-name">低粉爆款法</div>
+        <div class="method-source">04-小红书</div>
+        <span class="status-tag ok">已含 M4</span>
+      </div>
+      <div class="method">
+        <div class="method-head"><span class="method-id">X3</span><span class="importance">⭐⭐</span></div>
+        <div class="method-name">抖音精选联盟</div>
+        <div class="method-source">04-小红书</div>
+        <span class="status-tag miss">遗漏</span>
+      </div>
+      <div class="method">
+        <div class="method-head"><span class="method-id">X4</span><span class="importance">⭐⭐</span></div>
+        <div class="method-name">灰豚数据</div>
+        <div class="method-source">04-小红书</div>
+        <span class="status-tag miss">遗漏</span>
+      </div>
+      <div class="method">
+        <div class="method-head"><span class="method-id">X5</span><span class="importance">⭐⭐</span></div>
+        <div class="method-name">蝉妈妈工具</div>
+        <div class="method-source">04-小红书</div>
+        <span class="status-tag miss">遗漏</span>
+      </div>
+      <div class="method">
+        <div class="method-head"><span class="method-id">X6</span><span class="importance">⭐⭐</span></div>
+        <div class="method-name">小红书 APP 选爆品</div>
+        <div class="method-source">04-小红书</div>
+        <span class="status-tag miss">遗漏</span>
+      </div>
+      <div class="method">
+        <div class="method-head"><span class="method-id">X7</span><span class="importance">⭐</span></div>
+        <div class="method-name">传统电商平台搜索</div>
+        <div class="method-source">04-小红书</div>
+        <span class="status-tag miss">遗漏</span>
+      </div>
+      <div class="method">
+        <div class="method-head"><span class="method-id">X8</span><span class="importance">⭐⭐⭐</span></div>
+        <div class="method-name">选品漏斗池</div>
+        <div class="method-source">04-小红书</div>
+        <span class="status-tag miss">遗漏</span>
+      </div>
+      <div class="method">
+        <div class="method-head"><span class="method-id">X9</span><span class="importance">⭐⭐</span></div>
+        <div class="method-name">选品方向（7 大）</div>
+        <div class="method-source">04-小红书</div>
+        <span class="status-tag miss">遗漏</span>
+      </div>
+      <div class="method">
+        <div class="method-head"><span class="method-id">X10</span><span class="importance">⭐⭐</span></div>
+        <div class="method-name">测品方法</div>
+        <div class="method-source">04-小红书</div>
+        <span class="status-tag miss">遗漏</span>
+      </div>
+      <div class="method">
+        <div class="method-head"><span class="method-id">X11</span><span class="importance">⭐</span></div>
+        <div class="method-name">中高端路线原则</div>
+        <div class="method-source">04-小红书</div>
+        <span class="status-tag miss">遗漏</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 第三组：跨领域 -->
+  <div class="section">
+    <div class="section-title"><span class="num">3</span>跨领域方法（部分相关）</div>
+    <div class="method-grid">
+      <div class="method">
+        <div class="method-head"><span class="method-id">O1</span><span class="importance">⭐⭐</span></div>
+        <div class="method-name">圈层选品</div>
+        <div class="method-source">11-其他</div>
+        <span class="status-tag miss">遗漏</span>
+      </div>
+      <div class="method">
+        <div class="method-head"><span class="method-id">O2</span><span class="importance">-</span></div>
+        <div class="method-name">投资模型选品</div>
+        <div class="method-source">11-其他</div>
+        <span class="status-tag skip">暂不做</span>
+      </div>
+      <div class="method">
+        <div class="method-head"><span class="method-id">O3</span><span class="importance">-</span></div>
+        <div class="method-name">虚拟品选品</div>
+        <div class="method-source">11-其他</div>
+        <span class="status-tag skip">暂不做</span>
+      </div>
+      <div class="method">
+        <div class="method-head"><span class="method-id">O4</span><span class="importance">-</span></div>
+        <div class="method-name">独立站选品</div>
+        <div class="method-source">11-其他</div>
+        <span class="status-tag skip">v3 砍</span>
+      </div>
+      <div class="method">
+        <div class="method-head"><span class="method-id">O5</span><span class="importance">-</span></div>
+        <div class="method-name">B2B 选品</div>
+        <div class="method-source">11-其他</div>
+        <span class="status-tag skip">暂不做</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 11 处疏漏 -->
+  <div class="section">
+    <div class="section-title"><span class="num">4</span>11 处疏漏清单</div>
+    <div class="miss-list">
+      <div class="miss-item">
+        <div class="miss-id">疏漏 #1</div>
+        <div class="miss-title">M3 缺方法论依据</div>
+        <div class="miss-desc">没明确 G1-G8 + X1-X11 中必须用哪几个</div>
+      </div>
+      <div class="miss-item">
+        <div class="miss-id">疏漏 #2</div>
+        <div class="miss-title">M1 缺漏斗池</div>
+        <div class="miss-desc">X8 每天3+新品+ABC测试+相似款跟踪</div>
+      </div>
+      <div class="miss-item">
+        <div class="miss-id">疏漏 #3</div>
+        <div class="miss-title">M1 缺选品方向</div>
+        <div class="miss-desc">X9 7 大方向（功能性半标品/红海蓝海/美妆...）</div>
+      </div>
+      <div class="miss-item">
+        <div class="miss-id">疏漏 #4</div>
+        <div class="miss-title">M2 缺测品</div>
+        <div class="miss-desc">X10 测多封面+标题+15天数据周期</div>
+      </div>
+      <div class="miss-item">
+        <div class="miss-id">疏漏 #5</div>
+        <div class="miss-title">M6 缺双轨评分</div>
+        <div class="miss-desc">小红书商家 vs 货源商家 是两套</div>
+      </div>
+      <div class="miss-item">
+        <div class="miss-id">疏漏 #6</div>
+        <div class="miss-title">M1 缺中高端原则</div>
+        <div class="miss-desc">X11 小红书要敢于开高价</div>
+      </div>
+      <div class="miss-item">
+        <div class="miss-id">疏漏 #7</div>
+        <div class="miss-title">M5 缺交叉验证</div>
+        <div class="miss-desc">X7 传统电商平台数据验证</div>
+      </div>
+      <div class="miss-item">
+        <div class="miss-id">疏漏 #8</div>
+        <div class="miss-title">M3 缺痛点维度</div>
+        <div class="miss-desc">G4 痛点vs痒点 + G7 用户需求</div>
+      </div>
+      <div class="miss-item">
+        <div class="miss-id">疏漏 #9</div>
+        <div class="miss-title">M2 缺跟品</div>
+        <div class="miss-desc">G5 爆品截流 → 反查货源 → 双策略</div>
+      </div>
+      <div class="miss-item">
+        <div class="miss-id">疏漏 #10</div>
+        <div class="miss-title">M1 缺第三方工具</div>
+        <div class="miss-desc">X3-X5 千瓜/灰豚/蝉妈妈/巨量算数</div>
+      </div>
+      <div class="miss-item">
+        <div class="miss-id">疏漏 #11</div>
+        <div class="miss-title">M1 缺周期性</div>
+        <div class="miss-desc">G6 节日/季节选品日历（nice_to_have）</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- v3.1 新增 must_pass -->
+  <div class="section">
+    <div class="section-title"><span class="num">5</span>v3.1 新增 must_pass（5 条）</div>
+    <div class="new-must">
+      <div class="new-must-head">
+        <span class="new-must-id">M11</span>
+        <span class="new-must-time">+4-5h</span>
+      </div>
+      <div class="new-must-name">选品漏斗池</div>
+      <div class="new-must-desc">每天 3+ 新品入库 + 每品分配 3 条笔记 ABC 测试 + 出单品反查相似款（来源：04-小红书 X8）</div>
+    </div>
+    <div class="new-must">
+      <div class="new-must-head">
+        <span class="new-must-id">M12</span>
+        <span class="new-must-time">+2-3h</span>
+      </div>
+      <div class="new-must-name">选品方向支持（7 大）</div>
+      <div class="new-must-desc">功能性半标品/红海中蓝海/美妆护肤/自带流量/大牌平替/新奇特+真实需求/知识付费（来源：04-小红书 X9）</div>
+    </div>
+    <div class="new-must">
+      <div class="new-must-head">
+        <span class="new-must-id">M13</span>
+        <span class="new-must-time">+6-8h</span>
+      </div>
+      <div class="new-must-name">测品功能</div>
+      <div class="new-must-desc">每品测 3 封面+3 标题+15 天数据周期+无销量自动下架（来源：04-小红书 X10）</div>
+    </div>
+    <div class="new-must">
+      <div class="new-must-head">
+        <span class="new-must-id">M14</span>
+        <span class="new-must-time">+1-2h</span>
+      </div>
+      <div class="new-must-name">中高端路线原则</div>
+      <div class="new-must-desc">AI 选品建议必须提示"中高端定位"+ 高价卖点挖掘（来源：04-小红书 X11）</div>
+    </div>
+    <div class="new-must">
+      <div class="new-must-head">
+        <span class="new-must-id">M15</span>
+        <span class="new-must-time">+10-12h</span>
+      </div>
+      <div class="new-must-name">第三方数据工具集成</div>
+      <div class="new-must-desc">千瓜 100 品类/灰豚商品榜/蝉妈妈视频榜/巨量算数/抖音精选联盟/小红书 APP（来源：04-小红书 X3-X5）</div>
+    </div>
+  </div>
+
+  <!-- 工时对比 -->
+  <div class="section">
+    <div class="section-title"><span class="num">6</span>工时估算对比</div>
+    <div class="estimate">
+      <div class="estimate-box">
+        <h5>v3 旧版</h5>
+        <div class="big">60-80h</div>
+        <p style="font-size: 12px; color: #6B5D4F; margin-top: 4px;">10 条 must_pass<br>3-4 周（15-20 天）</p>
+      </div>
+      <div class="estimate-box warn">
+        <h5>v3.1 对齐后</h5>
+        <div class="big">80-100h</div>
+        <p style="font-size: 12px; color: #6B5D4F; margin-top: 4px;">15 条 must_pass（+5）<br>5 周（20-25 天）</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 决策提示 -->
+  <div class="decision">
+    <h3>那哥需要决策的 3 件事</h3>
+    <ul>
+      <li>是否接受 5 条新增 must_pass（M11-M15）？A 全接 / B 只接 M11+M13 / C 全不接</li>
+      <li>M15 第三方工具怎么处理？A 集成（极致安全） / B 只做跳转链接 / C 砍掉</li>
+      <li>v3 GOAL 是否升级到 v3.1？A 升级 / B 保持 v3 10 条分批迭代</li>
+    </ul>
+  </div>
+
+  <footer>
+    生成于 2026-06-09 · 由小米对齐 11 篇手册 + v3 GOAL · 完整报告见 /Users/michael/AI项目/xhs-picker/v3-对齐报告.md
+  </footer>
+</div>
+</body>
+</html>
