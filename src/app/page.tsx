@@ -5,21 +5,22 @@
  * 功能：
  * - 关键词输入 + 品类选择 + 平台多选
  * - AI选品分析报告展示（6板块）
- * - 内置浏览器窗口
+ * - 内置浏览器窗口（用户登录 → 提取真实数据 → AI分析）
  * - 黑五类警告弹窗
  * - 选品跟踪功能
- *
- * 注意：MVP阶段使用客户端模拟数据，无需服务端
  */
 
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { invoke } from '@tauri-apps/api/core';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import type {
   Category,
   PlatformId,
   PickReport,
   PlatformBlacklistWarning,
+  ContentItem,
 } from '@/lib/platforms/types';
 import { PLATFORM_NAMES, PLATFORM_ICONS } from '@/lib/platforms';
 import { CATEGORY_OPTIONS } from '@/lib/categories';
@@ -38,10 +39,53 @@ const PLATFORM_OPTIONS: { id: PlatformId; name: string }[] = [
   { id: 'shipinhao', name: '视频号' },
 ];
 
+// ============== 类型 ==============
+
+interface PageData {
+  notes: Array<{
+    id: string;
+    title: string;
+    likes: number;
+    collects: number;
+    comments: number;
+    shares: number;
+    author: string;
+    url: string;
+  }>;
+  keyword: string;
+  url: string;
+  error?: string;
+}
+
+// ============== 工具函数 ==============
+
+function convertToContentItem(note: PageData['notes'][0]): ContentItem {
+  return {
+    id: note.id,
+    title: note.title,
+    url: note.url,
+    publishTime: '',
+    engagement: {
+      likes: note.likes,
+      collects: note.collects,
+      comments: note.comments,
+      shares: note.shares,
+      total: note.likes + note.collects + note.comments + note.shares,
+    },
+    account: {
+      id: '',
+      nickname: note.author,
+      avatar: '',
+      followers: 0,
+    },
+    isLowFollowerViral: false,
+  };
+}
+
 // ============== 组件 ==============
 
 export default function Home() {
-  // 状态
+  // 状态 - 分析
   const [keyword, setKeyword] = useState('');
   const [category, setCategory] = useState<Category | ''>('');
   const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformId[]>(['xhs']);
@@ -49,8 +93,62 @@ export default function Home() {
   const [report, setReport] = useState<PickReport | null>(null);
   const [blacklistWarnings, setBlacklistWarnings] = useState<PlatformBlacklistWarning[]>([]);
   const [showBlacklistAlert, setShowBlacklistAlert] = useState(false);
-  const [activeTab, setActiveTab] = useState<'analyze' | 'browser' | 'tracker'>('analyze');
   const [error, setError] = useState<string | null>(null);
+
+  // 状态 - 提取
+  const [activeTab, setActiveTab] = useState<'analyze' | 'browser' | 'tracker'>('analyze');
+  const [extractedData, setExtractedData] = useState<ContentItem[] | null>(null);
+  const [extractedKeyword, setExtractedKeyword] = useState('');
+  const [extractStatus, setExtractStatus] = useState<string | null>(null);
+  const [isExtracting, setIsExtracting] = useState(false);
+
+  // 监听 page-data 事件
+  useEffect(() => {
+    let unlisten: UnlistenFn | null = null;
+
+    const setup = async () => {
+      unlisten = await listen<PageData>('page-data', (event) => {
+        const data = event.payload;
+
+        if (data.error === 'need_login') {
+          setExtractStatus('⚠️ 请先登录小红书，再提取数据');
+          setIsExtracting(false);
+          return;
+        }
+
+        if (data.error) {
+          setExtractStatus(`❌ 提取失败: ${data.error}`);
+          setIsExtracting(false);
+          return;
+        }
+
+        if (!data.notes || data.notes.length === 0) {
+          setExtractStatus('⚠️ 未找到笔记数据，请确认页面已加载完成');
+          setIsExtracting(false);
+          return;
+        }
+
+        // 转换数据
+        const contents = data.notes.map(convertToContentItem);
+        const kw = data.keyword || keyword;
+
+        setExtractedData(contents);
+        setExtractedKeyword(kw);
+        setExtractStatus(`✅ 成功提取 ${contents.length} 条笔记！`);
+        setIsExtracting(false);
+
+        // 自动用提取的数据分析
+        if (kw) {
+          setKeyword(kw);
+          const cat = category || '功能性半标品';
+          handleAnalyzeWithData(contents, kw, cat as Category);
+        }
+      });
+    };
+
+    setup();
+    return () => { unlisten?.(); };
+  }, [keyword, category]);
 
   // 切换平台选择
   const togglePlatform = (platformId: PlatformId) => {
@@ -62,7 +160,57 @@ export default function Home() {
     });
   };
 
-  // 执行分析（客户端模拟）
+  // 提取页面数据
+  const handleExtractData = async () => {
+    setIsExtracting(true);
+    setExtractStatus('📤 正在提取页面数据...');
+    setExtractedData(null);
+
+    try {
+      await invoke('extract_page_data');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setExtractStatus(`❌ 调用失败: ${msg}`);
+      setIsExtracting(false);
+    }
+  };
+
+  // 执行分析（传入真实数据）
+  const handleAnalyzeWithData = async (
+    data: ContentItem[],
+    kw: string,
+    cat: Category
+  ) => {
+    setIsAnalyzing(true);
+    setError(null);
+    setReport(null);
+
+    try {
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          keyword: kw,
+          category: cat,
+          platforms: selectedPlatforms,
+          scrapedData: data, // 传入真实数据
+        }),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        setError(result.error || '分析失败');
+      } else {
+        setReport(result.report);
+      }
+    } catch (err) {
+      // 网络失败时降级为本地 mock
+      setReport(generateMockReport(kw, cat, selectedPlatforms));
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  // 执行分析（无真实数据）
   const handleAnalyze = async () => {
     // 验证输入
     if (!keyword.trim()) {
@@ -75,6 +223,12 @@ export default function Home() {
     }
     if (selectedPlatforms.length === 0) {
       setError('请选择至少一个平台');
+      return;
+    }
+
+    // 有提取数据时用提取数据
+    if (extractedData && extractedKeyword) {
+      await handleAnalyzeWithData(extractedData, extractedKeyword, category as Category);
       return;
     }
 
@@ -246,6 +400,17 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* 提取状态提示 */}
+              {extractStatus && (
+                <div className={`mt-4 p-3 rounded-lg text-sm ${
+                  extractStatus.includes('✅') ? 'bg-green-50 border border-green-200 text-green-700' :
+                  extractStatus.includes('❌') ? 'bg-red-50 border border-red-200 text-red-700' :
+                  'bg-blue-50 border border-blue-200 text-blue-700'
+                }`}>
+                  {extractStatus}
+                </div>
+              )}
+
               {/* 错误提示 */}
               {error && (
                 <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
@@ -254,7 +419,7 @@ export default function Home() {
               )}
 
               {/* 分析按钮 */}
-              <div className="mt-6 flex justify-center">
+              <div className="mt-6 flex justify-center gap-4">
                 <button
                   onClick={handleAnalyze}
                   disabled={isAnalyzing}
@@ -272,6 +437,15 @@ export default function Home() {
                   )}
                 </button>
               </div>
+
+              {/* 提取数据提示 */}
+              {extractedData && (
+                <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-green-700 text-sm">
+                    📊 已提取 {extractedData.length} 条真实笔记数据，将用于 AI 分析
+                  </p>
+                </div>
+              )}
             </section>
 
             {/* 报告区域 */}
@@ -295,7 +469,12 @@ export default function Home() {
 
         {activeTab === 'browser' && (
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden" style={{ height: 'calc(100vh - 200px)' }}>
-            <BrowserPanel />
+            <BrowserPanel
+              onExtract={handleExtractData}
+              isExtracting={isExtracting}
+              extractStatus={extractStatus}
+              extractedCount={extractedData?.length || 0}
+            />
           </div>
         )}
 

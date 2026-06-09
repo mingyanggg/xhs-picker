@@ -5,9 +5,10 @@
  *
  * 请求体：
  * {
- *   keyword: string;      // 关键词
- *   category: Category;    // 品类
- *   platforms: PlatformId[]; // 目标平台
+ *   keyword: string;          // 关键词
+ *   category: Category;        // 品类
+ *   platforms: PlatformId[];   // 目标平台
+ *   scrapedData?: ContentItem[]; // 可选：已提取的真实数据
  * }
  *
  * 响应：
@@ -29,10 +30,7 @@ import type {
 } from '@/lib/platforms/types';
 import { analyze, generateMockReport } from '@/lib/analyzer';
 import { isBlacklisted, getPlatformWarnings } from '@/lib/blacklist';
-import {
-  getPlatform,
-  PLATFORM_NAMES,
-} from '@/lib/platforms';
+import { getPlatform, scrapeAllPlatforms, PLATFORM_NAMES } from '@/lib/platforms/server/platforms';
 
 // 有效的品类列表
 const VALID_CATEGORIES: Category[] = [
@@ -86,53 +84,6 @@ function validateRequest(body: any): { valid: boolean; error?: string } {
 }
 
 /**
- * 并行抓取各平台数据
- */
-async function scrapeAllPlatforms(
-  keyword: string,
-  category: Category,
-  platforms: PlatformId[]
-): Promise<{
-  scrapedDataList: ScrapedData[];
-  scrapeStatus: Record<PlatformId, string>;
-}> {
-  const results = await Promise.allSettled(
-    platforms.map(async (platformId) => {
-      const platform = getPlatform(platformId);
-      return await platform.scrape(keyword, category);
-    })
-  );
-
-  const scrapedDataList: ScrapedData[] = [];
-  const scrapeStatus: Record<PlatformId, string> = {} as any;
-
-  results.forEach((result, index) => {
-    const platformId = platforms[index];
-
-    if (result.status === 'fulfilled') {
-      scrapedDataList.push(result.value);
-      scrapeStatus[platformId] = result.value.status;
-    } else {
-      // 抓取失败
-      const failedData: ScrapedData = {
-        status: 'failed',
-        keyword,
-        platformId,
-        contents: [],
-        products: [],
-        scrapedAt: Date.now(),
-        isManualMode: false,
-        error: result.reason?.message || '未知错误',
-      };
-      scrapedDataList.push(failedData);
-      scrapeStatus[platformId] = 'failed';
-    }
-  });
-
-  return { scrapedDataList, scrapeStatus };
-}
-
-/**
  * POST /api/analyze
  */
 export async function POST(request: NextRequest) {
@@ -149,7 +100,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { keyword, category, platforms } = body;
+    const { keyword, category, platforms, scrapedData } = body;
 
     // 黑五类检测
     const blacklistCheck = isBlacklisted(keyword);
@@ -159,12 +110,30 @@ export async function POST(request: NextRequest) {
       blacklistWarnings = getPlatformWarnings(keyword, platforms);
     }
 
-    // 抓取各平台数据
-    const { scrapedDataList, scrapeStatus } = await scrapeAllPlatforms(
-      keyword,
-      category,
-      platforms
-    );
+    // 抓取各平台数据（如果有传入数据则跳过抓取）
+    let scrapedDataList: ScrapedData[];
+    let scrapeStatus: Record<PlatformId, string> = {} as any;
+
+    if (scrapedData && scrapedData.length > 0) {
+      // 使用传入的真实数据
+      console.log(`使用传入的真实数据：${scrapedData.length} 条笔记`);
+      scrapedDataList = [{
+        status: 'success',
+        keyword,
+        platformId: 'xhs',
+        contents: scrapedData,
+        products: [],
+        blueOceanRatio: scrapedData.length > 0 ? 1000 / scrapedData.length : 0,
+        scrapedAt: Date.now(),
+        isManualMode: false,
+      }];
+      scrapeStatus['xhs'] = 'success';
+    } else {
+      // 正常抓取各平台数据
+      const result = await scrapeAllPlatforms(keyword, category, platforms);
+      scrapedDataList = result.scrapedDataList;
+      scrapeStatus = result.scrapeStatus;
+    }
 
     // 调用AI分析（如果配置了API Key）
     let report;

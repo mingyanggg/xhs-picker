@@ -1,19 +1,12 @@
 /**
- * 平台抽象层统一导出
+ * 平台抽象层 - 客户端安全版本
  *
- * 统一导出所有平台抓取器，方便主流程调用
+ * ⚠️ 此模块只导出类型和常量
+ * ⚠️ 所有含 Playwright 的模块必须通过 /api/analyze 调用
+ * ⚠️ 禁止在客户端组件中导入 server/ 目录
  */
 
-import type { Platform, PlatformId } from './types';
-
-// 导出各平台抓取器
-export { xhsPlatform } from './xhs';
-export { kuaishouPlatform, scrapeKuaishou } from './kuaishou';
-export { douyinPlatform, scrapeDouyin } from './douyin';
-export { shipinhaoPlatform, scrapeShipinhao } from './shipinhao';
-export { genericPlatform, parseManualData, SCRAPE_TEMPLATES } from './generic';
-import { genericPlatform as genericPlat } from './generic';
-export { genericPlat as genericPlatformAlt };
+import type { PlatformId } from './types';
 
 // 导出类型
 export type {
@@ -25,26 +18,7 @@ export type {
   ProductData,
 } from './types';
 
-// ============== 平台注册表 ==============
-
-/** 平台注册表（用于动态获取平台实例） */
-export const PLATFORMS: Record<PlatformId, Platform> = {
-  xhs: require('./xhs').xhsPlatform,
-  kuaishou: require('./kuaishou').kuaishouPlatform,
-  douyin: require('./douyin').douyinPlatform,
-  shipinhao: require('./shipinhao').shipinhaoPlatform,
-  generic: require('./generic').genericPlatform,
-};
-
-/** 获取平台实例 */
-export function getPlatform(platformId: PlatformId): Platform {
-  return PLATFORMS[platformId];
-}
-
-/** 获取所有平台列表 */
-export function getAllPlatforms(): Platform[] {
-  return Object.values(PLATFORMS);
-}
+// ============== 平台常量（无 Playwright 依赖） ==============
 
 /** 平台ID到显示名称映射 */
 export const PLATFORM_NAMES: Record<PlatformId, string> = {

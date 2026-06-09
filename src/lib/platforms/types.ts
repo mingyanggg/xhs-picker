@@ -62,8 +62,14 @@ export interface EngagementData {
 
 /** 账号基础信息 */
 export interface AccountInfo {
+  /** 账号ID */
+  id?: string;
   /** 账号名称 */
   name: string;
+  /** 昵称（别名） */
+  nickname?: string;
+  /** 头像 */
+  avatar?: string;
   /** 粉丝数 */
   followers: number;
   /** 笔记/视频数 */
@@ -436,6 +442,8 @@ export interface AnalyzeRequest {
   platforms: PlatformId[];
   /** 可选：手动粘贴的数据（降级模式） */
   manualData?: Partial<Record<PlatformId, string>>;
+  /** 可选：已提取的真实数据（来自内置浏览器） */
+  scrapedData?: ContentItem[];
 }
 
 /** 分析响应 */

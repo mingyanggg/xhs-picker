@@ -4,7 +4,7 @@
  * 功能：
  * - 提供嵌入的浏览器窗口
  * - 支持用户登录各平台及第三方数据平台
- * - 支持CDP协议读取页面数据
+ * - 通过 Tauri CDP 协议读取页面数据
  */
 
 'use client';
@@ -19,10 +19,18 @@ interface BrowserTab {
 }
 
 interface BrowserPanelProps {
-  onDataExtracted?: (data: string) => void;
+  onExtract?: () => void;
+  isExtracting?: boolean;
+  extractStatus?: string | null;
+  extractedCount?: number;
 }
 
-export default function BrowserPanel({ onDataExtracted }: BrowserPanelProps) {
+export default function BrowserPanel({
+  onExtract,
+  isExtracting = false,
+  extractStatus,
+  extractedCount = 0,
+}: BrowserPanelProps) {
   const [tabs, setTabs] = useState<BrowserTab[]>([
     { id: 'default', title: '新标签页', url: '', isLoading: false },
   ]);
@@ -35,7 +43,6 @@ export default function BrowserPanel({ onDataExtracted }: BrowserPanelProps) {
   const handleNavigate = (url: string) => {
     if (!url) return;
 
-    // 添加协议
     let fullUrl = url;
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       fullUrl = 'https://' + url;
@@ -44,7 +51,6 @@ export default function BrowserPanel({ onDataExtracted }: BrowserPanelProps) {
     setIsNavigating(true);
     setCurrentUrl(fullUrl);
 
-    // 更新当前标签
     setTabs((prev) =>
       prev.map((tab) =>
         tab.id === activeTabId
@@ -53,7 +59,6 @@ export default function BrowserPanel({ onDataExtracted }: BrowserPanelProps) {
       )
     );
 
-    // 模拟导航完成
     setTimeout(() => {
       setIsNavigating(false);
       setTabs((prev) =>
@@ -77,7 +82,7 @@ export default function BrowserPanel({ onDataExtracted }: BrowserPanelProps) {
   };
 
   const handleCloseTab = (tabId: string) => {
-    if (tabs.length === 1) return; // 至少保留一个标签
+    if (tabs.length === 1) return;
 
     setTabs((prev) => {
       const newTabs = prev.filter((t) => t.id !== tabId);
@@ -89,8 +94,8 @@ export default function BrowserPanel({ onDataExtracted }: BrowserPanelProps) {
   };
 
   const quickUrls = [
-    { name: '小红书', url: 'https://www.xiaohongshu.com' },
-    { name: '抖音', url: 'https://www.douyin.com' },
+    { name: '小红书', url: 'https://www.xiaohongshu.com/explore' },
+    { name: '抖音', url: 'https://www.douyin.com/discover' },
     { name: '快手', url: 'https://www.kuaishou.com' },
     { name: '千瓜', url: 'https://www.qianhua.io' },
     { name: '灰豚', url: 'https://www.huitun.com' },
@@ -152,13 +157,43 @@ export default function BrowserPanel({ onDataExtracted }: BrowserPanelProps) {
         >
           {isNavigating ? '加载中...' : '前往'}
         </button>
+
+        {/* 提取数据按钮 */}
         <button
-          onClick={() => onDataExtracted?.('模拟提取的数据')}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          onClick={onExtract}
+          disabled={isExtracting || !activeTab?.url}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          title="提取当前页面数据用于AI分析"
         >
-          📊 提取数据
+          {isExtracting ? (
+            <>
+              <span className="animate-spin">⏳</span>
+              提取中...
+            </>
+          ) : (
+            <>
+              📊 提取数据
+              {extractedCount > 0 && (
+                <span className="bg-white text-green-700 px-2 py-0.5 rounded text-xs font-medium">
+                  {extractedCount}
+                </span>
+              )}
+            </>
+          )}
         </button>
       </div>
+
+      {/* 提取状态提示 */}
+      {extractStatus && (
+        <div className={`px-4 py-2 text-sm ${
+          extractStatus.includes('✅') ? 'bg-green-100 text-green-800' :
+          extractStatus.includes('❌') ? 'bg-red-100 text-red-800' :
+          extractStatus.includes('⚠️') ? 'bg-yellow-100 text-yellow-800' :
+          'bg-blue-100 text-blue-800'
+        }`}>
+          {extractStatus}
+        </div>
+      )}
 
       {/* 快捷入口 */}
       <div className="flex items-center gap-2 p-2 bg-white border-b overflow-x-auto">
@@ -180,7 +215,6 @@ export default function BrowserPanel({ onDataExtracted }: BrowserPanelProps) {
           <iframe
             src={activeTab.url}
             className="w-full h-full border-0"
-            sandbox="allow-scripts allow-same-origin allow-forms"
             title={activeTab.title}
           />
         ) : (
@@ -188,6 +222,11 @@ export default function BrowserPanel({ onDataExtracted }: BrowserPanelProps) {
             <span className="text-6xl mb-4">🌐</span>
             <p className="text-lg">输入网址开始浏览</p>
             <p className="text-sm mt-2">或使用上方快捷入口登录数据平台</p>
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg max-w-md text-center">
+              <p className="text-blue-700 text-sm">
+                💡 使用方法：先在浏览器中登录小红书 → 搜索关键词 → 点击「提取数据」
+              </p>
+            </div>
           </div>
         )}
 
@@ -204,7 +243,7 @@ export default function BrowserPanel({ onDataExtracted }: BrowserPanelProps) {
 
       {/* 底部提示 */}
       <div className="px-4 py-2 bg-gray-50 border-t text-xs text-gray-500">
-        💡 提示：在内置浏览器中登录数据平台后，点击"提取数据"按钮读取页面数据
+        💡 提示：在内置浏览器中登录小红书后，搜索关键词并点击「提取数据」读取真实笔记
       </div>
     </div>
   );
