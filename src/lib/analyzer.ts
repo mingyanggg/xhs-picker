@@ -42,14 +42,17 @@ const HAS_REAL_API_KEY = DEEPSEEK_API_KEY &&
 
 /**
  * 构建选品分析的系统提示词
+ *
+ * v3.1 小红书专用版本
  */
 function buildSystemPrompt(): string {
-  return `你是小红书/全平台AI选品助手，专注于帮助副业卖家进行跨平台选品分析。
+  return `你是小红书AI选品+货源对接助手，专注于帮助副业卖家进行选品分析。
 
 ## 你的能力
-- 分析各平台（小红书/快手/抖音/视频号）的选品数据
-- 评估蓝海指数、爆款潜力、平台适合度
-- 给出具体的选品建议和行动方案
+- 分析小红书平台的选品数据
+- 反查1688/拼多多/淘宝同款货源
+- 评估蓝海指数、爆款潜力、利润空间
+- 给出具体的选品建议和货源推荐
 
 ## 分析报告结构（必须严格按此JSON格式输出）
 {
@@ -204,10 +207,8 @@ interface ZhipuRequest {
   max_tokens?: number;
 }
 
-/**
- * 调用 DeepSeek API（OpenAI 兼容）
- */
-async function callZhipuAPI(
+/** DeepSeek API 调用（使用真实配置的 Key） */
+async function callDeepSeekAPI(
   systemPrompt: string,
   userPrompt: string,
   model: string = 'deepseek-v4-flash'
@@ -301,8 +302,8 @@ export async function analyze(
   const systemPrompt = buildSystemPrompt();
   const userPrompt = buildUserPrompt(keyword, category, platforms, scrapedDataList);
 
-  // 调用AI
-  const aiResponse = await callZhipuAPI(systemPrompt, userPrompt);
+  // 调用 DeepSeek AI
+  const aiResponse = await callDeepSeekAPI(systemPrompt, userPrompt);
 
   // 解析报告
   const report = parseReport(aiResponse);
@@ -441,5 +442,5 @@ export function generateMockReport(
 // ============== 导出 ==============
 
 export default analyze;
-export { callZhipuAPI, parseReport, buildSystemPrompt, buildUserPrompt };
+export { callDeepSeekAPI, parseReport, buildSystemPrompt, buildUserPrompt };
 export { HAS_REAL_API_KEY };
