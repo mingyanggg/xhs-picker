@@ -1,20 +1,13 @@
 /**
- * XHS Picker - 全平台AI选品工具
- * 主界面
+ * XHS Picker v4.0 · 主界面
  *
- * 功能：
- * - 关键词输入 + 品类选择 + 平台多选
- * - AI选品分析报告展示（6板块）
- * - 内置浏览器窗口（用户登录 → 提取真实数据 → AI分析）
- * - 黑五类警告弹窗
- * - 选品跟踪功能
+ * 布局：3 栏 Linear 风格（Sidebar 240px + List 360px + Detail flex）
+ * 设计基线：v4.0-mockup.html（那哥 6/9 23:00 拍板 OK）
  */
 
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import { invoke } from '@tauri-apps/api/core';
-import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+import { useState, useEffect, useCallback } from 'react';
 import type {
   Category,
   PlatformId,
@@ -29,216 +22,95 @@ import { generateMockReport } from '@/lib/analyzer';
 import { addTrackerItem } from '@/lib/tracker/store';
 import BlacklistAlert from '@/components/BlacklistAlert';
 import ReportCard from '@/components/ReportCard';
-import BrowserPanel from '@/components/BrowserPanel';
-
-// 平台选项（v3 只保留小红书）
-const PLATFORM_OPTIONS: { id: PlatformId; name: string }[] = [
-  { id: 'xhs', name: '小红书' },
-];
 
 // ============== 类型 ==============
 
-interface PageData {
-  notes: Array<{
-    id: string;
-    title: string;
-    likes: number;
-    collects: number;
-    comments: number;
-    shares: number;
-    author: string;
-    url: string;
-  }>;
-  keyword: string;
-  url: string;
-  error?: string;
+type TabId = 'pick' | 'source' | 'seller' | 'tracker' | 'manual' | 'settings';
+
+interface NavItem {
+  id: TabId;
+  icon: string;
+  label: string;
+  count?: number;
 }
 
-// ============== 工具函数 ==============
-
-function convertToContentItem(note: PageData['notes'][0]): ContentItem {
-  return {
-    id: note.id,
-    title: note.title,
-    url: note.url,
-    publishTime: '',
-    engagement: {
-      likes: note.likes,
-      collects: note.collects,
-      comments: note.comments,
-      shares: note.shares,
-      total: note.likes + note.collects + note.comments + note.shares,
-    },
-    account: {
-      id: '',
-      name: note.author,
-      nickname: note.author,
-      avatar: '',
-      followers: 0,
-      contentCount: 0,
-      avgEngagement: 0,
-    },
-    isLowFollowerViral: false,
-  };
+interface NoteItem {
+  id: string;
+  title: string;
+  author: string;
+  likes: number;
+  time: string;
 }
+
+// ============== 常量（设计 token） ==============
+
+const TOKENS = {
+  bgMain: '#FAF8F4',
+  bgCard: '#FFFFFF',
+  bgSidebar: '#F2EDE4',
+  bgHover: '#F5F0E8',
+  textPrimary: '#2C2620',
+  textSecondary: '#8B6F47',
+  textTertiary: '#B8A88A',
+  accent: '#D97706',
+  accentHover: '#B45309',
+  border: '#E8D9C0',
+  borderStrong: '#C4B190',
+};
+
+// ============== 导航数据 ==============
+
+const NAV_ITEMS: NavItem[] = [
+  { id: 'pick', icon: '🔍', label: '选品分析' },
+  { id: 'source', icon: '🏭', label: '货源反查' },
+  { id: 'seller', icon: '⭐', label: '商家评分' },
+  { id: 'tracker', icon: '📌', label: '跟踪列表', count: 0 },
+  { id: 'manual', icon: '📚', label: '选品手册' },
+  { id: 'settings', icon: '⚙️', label: '设置' },
+];
 
 // ============== 组件 ==============
 
 export default function Home() {
-  // 状态 - 分析
+  // 状态
+  const [activeNav, setActiveNav] = useState<TabId>('pick');
   const [keyword, setKeyword] = useState('');
   const [category, setCategory] = useState<Category | ''>('');
-  const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformId[]>(['xhs']);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [report, setReport] = useState<PickReport | null>(null);
-  const [blacklistWarnings, setBlacklistWarnings] = useState<PlatformBlacklistWarning[]>([]);
   const [showBlacklistAlert, setShowBlacklistAlert] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [blacklistWarnings, setBlacklistWarnings] = useState<PlatformBlacklistWarning[]>([]);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
 
-  // 状态 - 提取
-  const [activeTab, setActiveTab] = useState<'analyze' | 'browser' | 'tracker'>('analyze');
-  const [extractedData, setExtractedData] = useState<ContentItem[] | null>(null);
-  const [extractedKeyword, setExtractedKeyword] = useState('');
-  const [extractStatus, setExtractStatus] = useState<string | null>(null);
-  const [isExtracting, setIsExtracting] = useState(false);
+  // 搜索结果（模拟）
+  const [notes, setNotes] = useState<NoteItem[]>([]);
+  const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
 
-  // 监听 page-data 事件
+  // ⌘K 快捷键
   useEffect(() => {
-    let unlisten: UnlistenFn | null = null;
-
-    const setup = async () => {
-      unlisten = await listen<PageData>('page-data', (event) => {
-        const data = event.payload;
-
-        if (data.error === 'need_login') {
-          setExtractStatus('⚠️ 请先登录小红书，再提取数据');
-          setIsExtracting(false);
-          return;
-        }
-
-        if (data.error) {
-          setExtractStatus(`❌ 提取失败: ${data.error}`);
-          setIsExtracting(false);
-          return;
-        }
-
-        if (!data.notes || data.notes.length === 0) {
-          setExtractStatus('⚠️ 未找到笔记数据，请确认页面已加载完成');
-          setIsExtracting(false);
-          return;
-        }
-
-        // 转换数据
-        const contents = data.notes.map(convertToContentItem);
-        const kw = data.keyword || keyword;
-
-        setExtractedData(contents);
-        setExtractedKeyword(kw);
-        setExtractStatus(`✅ 成功提取 ${contents.length} 条笔记！`);
-        setIsExtracting(false);
-
-        // 自动用提取的数据分析
-        if (kw) {
-          setKeyword(kw);
-          const cat = category || '功能性半标品';
-          handleAnalyzeWithData(contents, kw, cat as Category);
-        }
-      });
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowCommandPalette(true);
+      }
+      if (e.key === 'Escape') {
+        setShowCommandPalette(false);
+      }
     };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
-    setup();
-    return () => { unlisten?.(); };
-  }, [keyword, category]);
+  // 执行分析
+  const handleAnalyze = useCallback(async () => {
+    if (!keyword.trim() || !category) return;
 
-  // 切换平台选择
-  const togglePlatform = (platformId: PlatformId) => {
-    setSelectedPlatforms((prev) => {
-      if (prev.includes(platformId)) {
-        return prev.filter((p) => p !== platformId);
-      }
-      return [...prev, platformId];
-    });
-  };
-
-  // 提取页面数据
-  const handleExtractData = async () => {
-    setIsExtracting(true);
-    setExtractStatus('📤 正在提取页面数据...');
-    setExtractedData(null);
-
-    try {
-      await invoke('extract_page_data');
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setExtractStatus(`❌ 调用失败: ${msg}`);
-      setIsExtracting(false);
-    }
-  };
-
-  // 执行分析（传入真实数据）
-  const handleAnalyzeWithData = async (
-    data: ContentItem[],
-    kw: string,
-    cat: Category
-  ) => {
     setIsAnalyzing(true);
-    setError(null);
-    setReport(null);
-
-    try {
-      const res = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          keyword: kw,
-          category: cat,
-          platforms: selectedPlatforms,
-          scrapedData: data, // 传入真实数据
-        }),
-      });
-      const result = await res.json();
-      if (!res.ok) {
-        setError(result.error || '分析失败');
-      } else {
-        setReport(result.report);
-      }
-    } catch (err) {
-      // 网络失败时降级为本地 mock
-      setReport(generateMockReport(kw, cat, selectedPlatforms));
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  // 执行分析（无真实数据）
-  const handleAnalyze = async () => {
-    // 验证输入
-    if (!keyword.trim()) {
-      setError('请输入关键词');
-      return;
-    }
-    if (!category) {
-      setError('请选择品类');
-      return;
-    }
-    if (selectedPlatforms.length === 0) {
-      setError('请选择至少一个平台');
-      return;
-    }
-
-    // 有提取数据时用提取数据
-    if (extractedData && extractedKeyword) {
-      await handleAnalyzeWithData(extractedData, extractedKeyword, category as Category);
-      return;
-    }
-
-    setError(null);
-    setIsAnalyzing(true);
-    setReport(null);
+    setShowBlacklistAlert(false);
 
     // 黑五类检测
     if (isBlacklisted(keyword)) {
-      const warnings = getPlatformWarnings(keyword, selectedPlatforms);
+      const warnings = getPlatformWarnings(keyword, ['xhs']);
       setBlacklistWarnings(warnings);
       setShowBlacklistAlert(true);
     }
@@ -250,256 +122,416 @@ export default function Home() {
         body: JSON.stringify({
           keyword: keyword.trim(),
           category,
-          platforms: selectedPlatforms,
+          platforms: ['xhs'],
         }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || '分析失败');
-      } else {
-        setReport(data.report);
-      }
-    } catch (err) {
-      // 网络失败时降级为本地 mock
-      setReport(generateMockReport(keyword.trim(), category as Category, selectedPlatforms));
+      if (!res.ok) throw new Error(data.error);
+      setReport(data.report);
+      // 模拟笔记列表
+      setNotes(data.report.viralPotential?.[0]?.topAccounts?.map((a: any, i: number) => ({
+        id: `note-${i}`,
+        title: `${a.name} 的爆款笔记`,
+        author: a.name,
+        likes: a.avgEngagement || 0,
+        time: '2小时前',
+      })) || []);
+    } catch {
+      setReport(generateMockReport(keyword.trim(), category as Category, ['xhs']));
     } finally {
       setIsAnalyzing(false);
     }
-  };
+  }, [keyword, category]);
 
-  // 添加到跟踪列表
-  const handleAddToTracker = () => {
-    if (!report) return;
-    addTrackerItem(keyword, category as Category, selectedPlatforms);
-    alert('已加入跟踪列表');
-  };
+  // 选品分析视图
+  const renderPickView = () => (
+    <div className="flex h-full">
+      {/* 左：搜索条件 */}
+      <div style={{ width: 360, borderRight: `1px solid ${TOKENS.border}`, padding: 16 }}>
+        <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 16 }}>🔍 选品分析</h3>
 
-  // 关闭黑五类警告
-  const handleDismissBlacklist = useCallback(() => {
-    setShowBlacklistAlert(false);
-  }, []);
+        <div style={{ marginBottom: 12 }}>
+          <label style={{ display: 'block', fontSize: 12, color: TOKENS.textSecondary, marginBottom: 4 }}>
+            关键词
+          </label>
+          <input
+            type="text"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            placeholder="输入品类关键词"
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              border: `1px solid ${TOKENS.border}`,
+              borderRadius: 8,
+              fontSize: 13,
+              outline: 'none',
+            }}
+          />
+        </div>
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100">
-      {/* 顶部导航 */}
-      <header className="bg-white shadow-sm sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold text-gray-900">
-                🎯 XHS Picker
-              </h1>
-              <span className="text-sm text-gray-500">全平台AI选品工具</span>
-            </div>
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: 'block', fontSize: 12, color: TOKENS.textSecondary, marginBottom: 4 }}>
+            品类
+          </label>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value as Category)}
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              border: `1px solid ${TOKENS.border}`,
+              borderRadius: 8,
+              fontSize: 13,
+              background: TOKENS.bgCard,
+              outline: 'none',
+            }}
+          >
+            <option value="">选择品类</option>
+            {CATEGORY_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
 
-            {/* Tab 切换 */}
-            <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
-              <button
-                onClick={() => setActiveTab('analyze')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activeTab === 'analyze'
-                    ? 'bg-white text-orange-600 shadow'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
+        <button
+          onClick={handleAnalyze}
+          disabled={isAnalyzing || !keyword || !category}
+          style={{
+            width: '100%',
+            padding: '10px 16px',
+            background: isAnalyzing ? TOKENS.textTertiary : TOKENS.accent,
+            color: 'white',
+            border: 'none',
+            borderRadius: 8,
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: isAnalyzing ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {isAnalyzing ? '⏳ 分析中...' : '🔍 开始分析'}
+        </button>
+      </div>
+
+      {/* 中：笔记列表 */}
+      <div style={{ width: 360, borderRight: `1px solid ${TOKENS.border}`, overflow: 'auto' }}>
+        <div style={{ padding: '12px 16px', borderBottom: `1px solid ${TOKENS.border}` }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <span style={{ fontSize: 14, fontWeight: 600 }}>搜索结果</span>
+            <span style={{ fontSize: 12, color: TOKENS.textTertiary }}>{notes.length} 条</span>
+          </div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {['全部', '爆款', '低粉'].map((f) => (
+              <span
+                key={f}
+                style={{
+                  padding: '3px 8px',
+                  fontSize: 11,
+                  borderRadius: 4,
+                  background: f === '全部' ? TOKENS.accent : TOKENS.bgSidebar,
+                  color: f === '全部' ? 'white' : TOKENS.textSecondary,
+                  cursor: 'pointer',
+                }}
               >
-                🔍 选品分析
-              </button>
-              <button
-                onClick={() => setActiveTab('browser')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activeTab === 'browser'
-                    ? 'bg-white text-orange-600 shadow'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                🌐 内置浏览器
-              </button>
-              <button
-                onClick={() => setActiveTab('tracker')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activeTab === 'tracker'
-                    ? 'bg-white text-orange-600 shadow'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                📌 跟踪列表
-              </button>
+                {f}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {notes.map((note) => (
+          <div
+            key={note.id}
+            onClick={() => setSelectedNoteId(note.id)}
+            style={{
+              padding: '12px 16px',
+              borderBottom: `1px solid ${TOKENS.border}`,
+              background: selectedNoteId === note.id ? TOKENS.bgHover : 'transparent',
+              cursor: 'pointer',
+            }}
+          >
+            <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>{note.title}</div>
+            <div style={{ fontSize: 11, color: TOKENS.textTertiary }}>
+              {note.author} · {note.likes} 赞 · {note.time}
             </div>
           </div>
+        ))}
+
+        {notes.length === 0 && (
+          <div style={{ padding: 40, textAlign: 'center', color: TOKENS.textTertiary }}>
+            输入关键词开始分析
+          </div>
+        )}
+      </div>
+
+      {/* 右：报告详情 */}
+      <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
+        {report ? (
+          <ReportCard report={report} onAddToTracker={() => addTrackerItem(keyword, category as Category, ['xhs'])} />
+        ) : (
+          <div style={{ textAlign: 'center', color: TOKENS.textTertiary, marginTop: 80 }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>📊</div>
+            <div style={{ fontSize: 16, marginBottom: 8 }}>输入关键词开始选品分析</div>
+            <div style={{ fontSize: 12 }}>报告包含：市场概况 / 爆款潜力 / 选品建议 / 货源推荐</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // 其他视图占位
+  const renderPlaceholder = (title: string) => (
+    <div style={{ textAlign: 'center', color: TOKENS.textTertiary, marginTop: 120 }}>
+      <div style={{ fontSize: 48, marginBottom: 16 }}>🚧</div>
+      <div style={{ fontSize: 16 }}>{title}</div>
+      <div style={{ fontSize: 12, marginTop: 8 }}>功能开发中...</div>
+    </div>
+  );
+
+  return (
+    <div style={{ minHeight: '100vh', background: TOKENS.bgMain, fontFamily: 'Inter, "PingFang SC", sans-serif' }}>
+      {/* 顶栏 */}
+      <header
+        style={{
+          height: 48,
+          background: TOKENS.bgCard,
+          borderBottom: `1px solid ${TOKENS.border}`,
+          display: 'flex',
+          alignItems: 'center',
+          padding: '0 16px',
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
+        }}
+      >
+        {/* Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div
+            style={{
+              width: 24,
+              height: 24,
+              background: `linear-gradient(135deg, ${TOKENS.accent} 0%, #F59E0B 100%)`,
+              borderRadius: 6,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontSize: 12,
+            }}
+          >
+            🎯
+          </div>
+          <span style={{ fontWeight: 600, fontSize: 15, color: TOKENS.accent }}>XHS Picker</span>
+        </div>
+
+        <div style={{ flex: 1 }} />
+
+        {/* 搜索触发器 ⌘K */}
+        <button
+          onClick={() => setShowCommandPalette(true)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '6px 12px',
+            background: TOKENS.bgSidebar,
+            border: `1px solid ${TOKENS.border}`,
+            borderRadius: 8,
+            color: TOKENS.textSecondary,
+            fontSize: 13,
+            cursor: 'pointer',
+            minWidth: 240,
+          }}
+        >
+          <span>🔍</span>
+          <span>搜索...</span>
+          <span
+            style={{
+              marginLeft: 'auto',
+              padding: '2px 6px',
+              background: TOKENS.bgCard,
+              border: `1px solid ${TOKENS.border}`,
+              borderRadius: 4,
+              fontSize: 11,
+              fontFamily: 'monospace',
+            }}
+          >
+            ⌘K
+          </span>
+        </button>
+
+        <div style={{ display: 'flex', gap: 4, marginLeft: 8 }}>
+          <button style={{ padding: '6px 10px', border: 'none', background: 'transparent', color: TOKENS.textSecondary, cursor: 'pointer', borderRadius: 6 }}>
+            ⚙️
+          </button>
         </div>
       </header>
 
-      {/* 主内容区 */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        {activeTab === 'analyze' && (
-          <div className="space-y-8">
-            {/* 搜索区域 */}
-            <section className="bg-white rounded-2xl shadow-lg p-8">
-              <h2 className="text-xl font-semibold text-gray-800 mb-6">📝 输入选品信息</h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* 关键词输入 */}
-                <div className="md:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    关键词 <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={keyword}
-                    onChange={(e) => setKeyword(e.target.value)}
-                    placeholder="输入品类关键词，如：防晒霜"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
-                  />
-                </div>
-
-                {/* 品类选择 */}
-                <div className="md:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    品类 <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as Category)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none bg-white"
+      {/* 主体布局 3 栏 */}
+      <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', height: 'calc(100vh - 48px)' }}>
+        {/* 左：Sidebar */}
+        <nav style={{ background: TOKENS.bgSidebar, borderRight: `1px solid ${TOKENS.border}`, padding: '12px 8px' }}>
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ padding: '4px 8px', fontSize: 11, color: TOKENS.textTertiary, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+              功能
+            </div>
+            {NAV_ITEMS.slice(0, 4).map((item) => (
+              <div
+                key={item.id}
+                onClick={() => setActiveNav(item.id)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '6px 8px',
+                  borderRadius: 4,
+                  color: activeNav === item.id ? TOKENS.accent : TOKENS.textSecondary,
+                  background: activeNav === item.id ? 'rgba(217, 119, 6, 0.12)' : 'transparent',
+                  fontWeight: activeNav === item.id ? 500 : 400,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                  marginBottom: 2,
+                }}
+              >
+                <span>{item.icon}</span>
+                <span>{item.label}</span>
+                {item.count !== undefined && item.count > 0 && (
+                  <span
+                    style={{
+                      marginLeft: 'auto',
+                      padding: '1px 6px',
+                      background: TOKENS.bgCard,
+                      borderRadius: 10,
+                      fontSize: 11,
+                    }}
                   >
-                    <option value="">选择品类</option>
-                    {CATEGORY_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* 平台选择 */}
-                <div className="md:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    目标平台 <span className="text-red-500">*</span>
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {PLATFORM_OPTIONS.map((platform) => (
-                      <label
-                        key={platform.id}
-                        className={`flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-all ${
-                          selectedPlatforms.includes(platform.id)
-                            ? 'border-orange-500 bg-orange-50 text-orange-700'
-                            : 'border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedPlatforms.includes(platform.id)}
-                          onChange={() => togglePlatform(platform.id)}
-                          className="accent-orange-500"
-                        />
-                        <span>{PLATFORM_ICONS[platform.id]}</span>
-                        <span className="text-sm">{platform.name}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
+                    {item.count}
+                  </span>
+                )}
               </div>
+            ))}
+          </div>
 
-              {/* 提取状态提示 */}
-              {extractStatus && (
-                <div className={`mt-4 p-3 rounded-lg text-sm ${
-                  extractStatus.includes('✅') ? 'bg-green-50 border border-green-200 text-green-700' :
-                  extractStatus.includes('❌') ? 'bg-red-50 border border-red-200 text-red-700' :
-                  'bg-blue-50 border border-blue-200 text-blue-700'
-                }`}>
-                  {extractStatus}
-                </div>
-              )}
+          <div style={{ marginTop: 16 }}>
+            <div style={{ padding: '4px 8px', fontSize: 11, color: TOKENS.textTertiary, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+              工具
+            </div>
+            {NAV_ITEMS.slice(4).map((item) => (
+              <div
+                key={item.id}
+                onClick={() => setActiveNav(item.id)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '6px 8px',
+                  borderRadius: 4,
+                  color: activeNav === item.id ? TOKENS.accent : TOKENS.textSecondary,
+                  background: activeNav === item.id ? 'rgba(217, 119, 6, 0.12)' : 'transparent',
+                  fontWeight: activeNav === item.id ? 500 : 400,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                  marginBottom: 2,
+                }}
+              >
+                <span>{item.icon}</span>
+                <span>{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </nav>
 
-              {/* 错误提示 */}
-              {error && (
-                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                  ⚠️ {error}
-                </div>
-              )}
+        {/* 右：内容区 */}
+        <main style={{ overflow: 'auto' }}>
+          {activeNav === 'pick' && renderPickView()}
+          {activeNav === 'source' && renderPlaceholder('货源反查')}
+          {activeNav === 'seller' && renderPlaceholder('商家评分')}
+          {activeNav === 'tracker' && renderPlaceholder('跟踪列表')}
+          {activeNav === 'manual' && renderPlaceholder('选品手册')}
+          {activeNav === 'settings' && renderPlaceholder('设置')}
+        </main>
+      </div>
 
-              {/* 分析按钮 */}
-              <div className="mt-6 flex justify-center gap-4">
-                <button
-                  onClick={handleAnalyze}
-                  disabled={isAnalyzing}
-                  className="px-8 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:from-orange-600 hover:to-amber-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+      {/* ⌘K 命令面板 */}
+      {showCommandPalette && (
+        <div
+          onClick={() => setShowCommandPalette(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.5)',
+            zIndex: 200,
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'center',
+            paddingTop: 120,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: 480,
+              background: TOKENS.bgCard,
+              borderRadius: 12,
+              boxShadow: '0 8px 24px rgba(44, 38, 32, 0.12)',
+              overflow: 'hidden',
+            }}
+          >
+            <div style={{ padding: 16, borderBottom: `1px solid ${TOKENS.border}` }}>
+              <input
+                type="text"
+                placeholder="输入命令或搜索..."
+                autoFocus
+                style={{
+                  width: '100%',
+                  border: 'none',
+                  outline: 'none',
+                  fontSize: 15,
+                  background: 'transparent',
+                }}
+              />
+            </div>
+            <div style={{ padding: 8, maxHeight: 300, overflow: 'auto' }}>
+              {[
+                { icon: '🔍', label: '选品分析', action: () => { setActiveNav('pick'); setShowCommandPalette(false); } },
+                { icon: '🏭', label: '货源反查', action: () => { setActiveNav('source'); setShowCommandPalette(false); } },
+                { icon: '📌', label: '跟踪列表', action: () => { setActiveNav('tracker'); setShowCommandPalette(false); } },
+              ].map((cmd, i) => (
+                <div
+                  key={i}
+                  onClick={cmd.action}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: '8px 12px',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    fontSize: 13,
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = TOKENS.bgHover)}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                 >
-                  {isAnalyzing ? (
-                    <>
-                      <span className="animate-spin">⏳</span>
-                      分析中...
-                    </>
-                  ) : (
-                    <>
-                      🔍 开始分析
-                    </>
-                  )}
-                </button>
-              </div>
-
-              {/* 提取数据提示 */}
-              {extractedData && (
-                <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-green-700 text-sm">
-                    📊 已提取 {extractedData.length} 条真实笔记数据，将用于 AI 分析
-                  </p>
+                  <span>{cmd.icon}</span>
+                  <span>{cmd.label}</span>
                 </div>
-              )}
-            </section>
-
-            {/* 报告区域 */}
-            <section className="bg-white rounded-2xl shadow-lg p-8">
-              {report ? (
-                <ReportCard report={report} onAddToTracker={handleAddToTracker} />
-              ) : (
-                <div className="text-center py-16">
-                  <span className="text-6xl mb-4 block">📊</span>
-                  <p className="text-xl text-gray-500 mb-2">
-                    输入关键词并选择平台后，这里将显示分析结果
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    报告包含：市场概况 / 蓝海对比 / 爆款潜力 / 选品建议 / 平台优先级 / 行动建议
-                  </p>
-                </div>
-              )}
-            </section>
-          </div>
-        )}
-
-        {activeTab === 'browser' && (
-          <div className="bg-white rounded-2xl shadow-lg overflow-hidden" style={{ height: 'calc(100vh - 200px)' }}>
-            <BrowserPanel
-              onExtract={handleExtractData}
-              isExtracting={isExtracting}
-              extractStatus={extractStatus}
-              extractedCount={extractedData?.length || 0}
-            />
-          </div>
-        )}
-
-        {activeTab === 'tracker' && (
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <div className="text-center py-16">
-              <span className="text-6xl mb-4 block">📌</span>
-              <p className="text-xl text-gray-500 mb-2">跟踪列表（功能开发中）</p>
-              <p className="text-sm text-gray-400">
-                将在后续版本中实现：跨平台数据监控、生命周期追踪、趋势对比
-              </p>
+              ))}
             </div>
           </div>
-        )}
-      </main>
+        </div>
+      )}
 
-      {/* 黑五类警告弹窗 */}
+      {/* 黑五类警告 */}
       {showBlacklistAlert && (
-        <BlacklistAlert warnings={blacklistWarnings} onDismiss={handleDismissBlacklist} />
+        <BlacklistAlert
+          warnings={blacklistWarnings}
+          onDismiss={() => setShowBlacklistAlert(false)}
+        />
       )}
 
       {/* Footer */}
-      <footer className="mt-12 py-6 text-center text-sm text-gray-500">
-        <p>XHS Picker v0.1.0 · 全平台AI选品工具</p>
-        <p className="mt-1 text-xs text-gray-400">Powered by DeepSeek</p>
+      <footer style={{ textAlign: 'center', padding: '16px', color: TOKENS.textTertiary, fontSize: 12 }}>
+        XHS Picker v4.0 · 全平台AI选品工具 · Powered by DeepSeek
       </footer>
     </div>
   );
